@@ -154,13 +154,13 @@ void interpreter(String filename)
                 transformedMat[2][0] =  float(token[3]);
                 transformedMat[3][0] =  1.0;
                 for(int a = transformStackList.size()-1; a >=0 ; a--){
+                 print(" "+transformStackList.get(a).level);
                    if(transformStackList.get(a).level<=currentLevel){
-                     printMat(transformStackList.get(a).tranMat);
                      transformedMat = matrixMult(transformStackList.get(a).tranMat, transformedMat);
                      //println("Transformed Matrix");
                      //printMat(vertMat);
                    }
-               }
+               } print("\n");
                center.x = transformedMat[0][0]/transformedMat[3][0];
                center.y = transformedMat[1][0]/transformedMat[3][0];
                center.z = transformedMat[2][0]/transformedMat[3][0];
@@ -188,6 +188,7 @@ void interpreter(String filename)
                vertMat[2][0] =  float(token[3]);
                vertMat[3][0] =  1.0;
                for(int a = transformStackList.size()-1; a >=0 ; a--){
+                 print(" "+transformStackList.get(a).level);
                  if(transformStackList.get(a).level<=currentLevel){
                    vertMat = matrixMult(transformStackList.get(a).tranMat, vertMat);
                    //println("Transformed Matrix");

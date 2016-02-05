@@ -149,8 +149,6 @@ float [][] createRotateMat(float angleInDegrees, float u, float v, float w){
 void printMat(float[][] matrix){
   int rows = matrix.length;
   int columns = matrix[0].length;
-  println(" ");
-  println("Matrix");
   for (int i = 0; i < rows; i++) {
       for (int j = 0; j < columns; j++) {
           System.out.print(matrix[i][j] + "\t");
