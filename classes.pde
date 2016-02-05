@@ -229,3 +229,12 @@ class Triangle extends RenderObj
             return new RayCollInfo(false, true);
     }
 }
+
+class RenderStack{
+    float[][] tranMat;
+    int level;
+    RenderStack(float[][] matrix, int lvl){
+      tranMat = matrix;
+      level = lvl;
+    }
+}

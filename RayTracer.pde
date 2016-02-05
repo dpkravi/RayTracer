@@ -3,10 +3,12 @@
 //  Ray Tracing Shell
 //
 ///////////////////////////////////////////////////////////////////////
+import java.util.Stack;
 
 boolean test1 = true;
     
-    
+boolean isPush = false;
+// boolean isPop = false;
     
 int screen_width = 300;
 int screen_height = 300;
@@ -20,6 +22,12 @@ ArrayList<RenderObj> renderList = new ArrayList<RenderObj>();
 ArrayList<PVector> vertices = new ArrayList<PVector>();
 ArrayList<Light> lights = new ArrayList<Light>();
 PVector[][] colorArray = new PVector[300][300];
+
+ArrayList<float[][]> transformList = new ArrayList<float[][]>();
+//Stack<ArrayList<float[][]>> stackList = new Stack<ArrayList<float[][]>>();
+
+ArrayList<RenderStack> transformStackList = new ArrayList<RenderStack>();
+
 Material currentSurface;
 PVector backgroundColor = new PVector(0,0,0);
 //Camera Variables
@@ -30,6 +38,13 @@ float camBottom;
 float camLeft;
 float camRight;
 boolean shadows;
+int currentLevel = 0;;
+
+float[][] vertMat = new float[4][1];
+
+float[][] transformMat = new float[4][4];
+float[][] currentMatrix = new float[4][4];
+//Stack<float[][]> matrixStack = new Stack<float[][]>();
 
 /////////////////////////////////////////////////////////////////////
 // Some initializations for the scene.
@@ -52,6 +67,9 @@ void setup()
 void keyPressed()
 {
     test1 = true;
+    transformList.clear();
+    transformStackList.clear();
+    
     switch(key)
     {
         case '1':  interpreter("t01.cli");
@@ -62,8 +80,8 @@ void keyPressed()
         break;
         case '4':  interpreter("t04.cli");
         break;
-        //case '5':  interpreter("t05.cli");
-        //break;
+        case '5':  interpreter("t05.cli");
+        break;
         //case '6':  interpreter("t06.cli");
         //break;
         //case '7':  interpreter("t07.cli");
@@ -142,37 +160,59 @@ void interpreter(String filename)
         }
         else if (token[0].equals("vertex")){
             PVector vertex = new PVector(float(token[1]), float(token[2]), float(token[3]));
-            vertices.add(vertex);
-            if(vertices.size() == 3)
-            {
-                Material triangleShader = new Material(currentSurface);
-                Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
-                renderList.add((RenderObj)triangle);
-                println("Vertices of the Triangle");
-                println(vertices.get(0));
-                println(vertices.get(1));
-                println(vertices.get(2));
-                vertices.clear();
+            if(isPush){
+               float[][] transformedMat = new float[4][1];
+               vertMat[0][0] =  float(token[1]);
+               vertMat[1][0] =  float(token[2]);
+               vertMat[2][0] =  float(token[3]);
+               vertMat[3][0] =  1.0;
+               for(int a = 0; a < transformStackList.size(); a++){
+                 if(transformStackList.get(a).level<=currentLevel){
+                   vertMat = matrixMult(transformStackList.get(a).tranMat, vertMat);
+                   println("Transformed Matrix");
+                   printMat(vertMat);
+                 }
+               }
+               vertex.x = vertMat[0][0]/vertMat[3][0];
+               vertex.y = vertMat[1][0]/vertMat[3][0];
+               vertex.z = vertMat[2][0]/vertMat[3][0];
+               vertices.add(vertex);
             }
-            
+            else{
+              vertices.add(vertex);
+            }
+            if(vertices.size() == 3)
+              {
+                  Material triangleShader = new Material(currentSurface);
+                  Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
+                  renderList.add((RenderObj)triangle);
+                  println("Vertices of the Triangle");
+                  println(vertices.get(0));
+                  println(vertices.get(1));
+                  println(vertices.get(2));
+                  vertices.clear();
+              }
         }
         else if (token[0].equals("end")){
           //Ignore
         }
         else if (token[0].equals("push")){
-          //Ignore
+          isPush = true;
+          currentLevel++;
         }
         else if (token[0].equals("pop")){
-          //Ignore
+          isPush = false;
+          currentLevel--;
+        //   transformList.pop();
         }
-        else if (token[0].equals("end")){
-          //Ignore
+        else if (token[0].equals("translate")){
+          transformStackList.add(new RenderStack(createTranslateMat(float(token[1]), float(token[2]), float(token[3])), currentLevel));
         }
-        else if (token[0].equals("end")){
-          //Ignore
+        else if (token[0].equals("rotate")){
+          transformStackList.add(new RenderStack(createRotateMat(float(token[1]), float(token[2]), float(token[3]), float(token[4])), currentLevel));
         }
-        else if (token[0].equals("end")){
-          //Ignore
+        else if (token[0].equals("scale")){
+          transformStackList.add(new RenderStack(createScaleMat(float(token[1]), float(token[2]), float(token[3])), currentLevel));
         }
         else if (token[0].equals("color"))
         {

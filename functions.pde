@@ -85,3 +85,74 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
 PVector createVec(PVector pt1, PVector pt2){
     return new PVector(pt2.x-pt1.x, pt2.y-pt1.y, pt2.z-pt1.z);
 }  
+
+float[][] matrixMult(float[][] A, float[][] B) {
+    int mA = A.length;
+    int nA = A[0].length;
+    int mB = B.length;
+    int nB = B[0].length;
+    if (nA != mB) throw new RuntimeException("Illegal matrix dimensions.");
+    float[][] C = new float[mA][nB];
+    for (int i = 0; i < mA; i++)
+        for (int j = 0; j < nB; j++)
+            for (int k = 0; k < nA; k++)
+                C[i][j] += A[i][k] * B[k][j];
+    return C;
+}
+
+float [][] createTranslateMat(float t1, float t2, float t3){
+    float[][] result = new float[][]{
+      { 1, 0, 0, t1},
+      { 0, 1, 0, t2},
+      { 0, 0, 1, t3},
+      { 0, 0, 0, 1},
+    };
+    println("The Translation Matrix");
+    printMat(result);
+    return result;
+}
+
+float [][] createScaleMat(float s1, float s2, float s3){
+    float[][] result = new float[][]{
+      { s1, 0, 0, 0},
+      { 0, s2, 0, 0},
+      { 0, 0, s3, 0},
+      { 0, 0, 0, 1},
+    };
+    println("The Scaling Matrix");
+    printMat(result);
+    return result;
+}
+
+float [][] createRotateMat(float angleInDegrees, float u, float v, float w){
+    float[][] result = new float[][]{
+      { 0, 0, 0, 0},
+      { 0, 0, 0, 0},
+      { 0, 0, 0, 0},
+      { 0, 0, 0, 1},
+    };
+    float angle = ((angleInDegrees * PI)/180.0);
+    result[0][0] = u*u + (1-u)*(1-u)*cos(angle);        
+    result[0][1] = u*v*(1-cos(angle)) - w*sin(angle);      
+    result[0][2] = u*w*(1-cos(angle))+v*sin(angle);
+    result[1][0] = u*v*(1-cos(angle)) + w*sin(angle);
+    result[1][1] = v*v + (1-v)*(1-v)*cos(angle); 
+    result[1][2] = v*w*(1-cos(angle))-u*sin(angle);
+    result[2][0] = u*w*(1-cos(angle))-v*sin(angle);
+    result[2][1] = v*w*(1-cos(angle))+u*sin(angle);
+    result[2][2] = w*w + (1-w)*(1-w)*cos(angle); 
+    println("The Rotation Matrix");
+    printMat(result);
+    return result;
+}
+
+void printMat(float[][] matrix){
+  int rows = matrix.length;
+  int columns = matrix[0].length;
+  for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+          System.out.print(matrix[i][j] + " ");
+      }
+      System.out.print("\n");
+  }
+}
