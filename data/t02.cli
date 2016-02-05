@@ -1,12 +1,15 @@
-# two spheres, includes shadow
+# one white triangle
 
 fov 60
-point_light 5 5 5 1 1 1
+point_light 0 0 0 1 1 1
+background 0.3 0.3 0.7
 
-diffuse   0.5 0 0  0.2 0 0   
-sphere 1  0 0 -4
+diffuse   0.8 0.8 0.8   0 0 0
 
-diffuse   0 0.5 0   0 0.2 0   
-sphere .3  1 0.6 -3
+begin
+vertex  0 -1 -2
+vertex  -1 1 -2
+vertex   1 1 -2
+end
 
 write t02.png

@@ -3,6 +3,16 @@
 //  Ray Tracing Shell
 //
 ///////////////////////////////////////////////////////////////////////
+import java.util.Stack;
+import java.util.Iterator;
+import java.util.Comparator;
+import java.util.Collections;
+
+boolean test1 = true;
+    
+boolean isPush = false;
+// boolean isPop = false;
+    
 int screen_width = 300;
 int screen_height = 300;
 // global matrix values
@@ -12,9 +22,15 @@ float[] gmat = new float[16];
 
 //////////////////////My CODE////////////////////////////////
 ArrayList<RenderObj> renderList = new ArrayList<RenderObj>();
-ArrayList<PVector> vertexList = new ArrayList<PVector>();
+ArrayList<PVector> vertices = new ArrayList<PVector>();
 ArrayList<Light> lights = new ArrayList<Light>();
 PVector[][] colorArray = new PVector[300][300];
+
+ArrayList<float[][]> transformList = new ArrayList<float[][]>();
+//Stack<ArrayList<float[][]>> stackList = new Stack<ArrayList<float[][]>>();
+
+ArrayList<RenderStack> transformStackList = new ArrayList<RenderStack>();
+
 Material currentSurface;
 PVector backgroundColor = new PVector(0,0,0);
 //Camera Variables
@@ -24,6 +40,14 @@ float camTop;
 float camBottom;
 float camLeft;
 float camRight;
+boolean shadows;
+int currentLevel = 0;;
+
+float[][] vertMat = new float[4][1];
+
+float[][] transformMat = new float[4][4];
+float[][] currentMatrix = new float[4][4];
+//Stack<float[][]> matrixStack = new Stack<float[][]>();
 
 /////////////////////////////////////////////////////////////////////
 // Some initializations for the scene.
@@ -45,6 +69,10 @@ void setup()
 // Press key 1 to 9 and 0 to run different test cases.
 void keyPressed()
 {
+    test1 = true;
+    transformList.clear();
+    transformStackList.clear();
+    
     switch(key)
     {
         case '1':  interpreter("t01.cli");
@@ -53,20 +81,20 @@ void keyPressed()
         break;
         case '3':  interpreter("t03.cli");
         break;
-        //case '4':  interpreter("t04.cli");
-        //break;
-        //case '5':  interpreter("t05.cli");
-        //break;
-        //case '6':  interpreter("t06.cli");
-        //break;
-        //case '7':  interpreter("t07.cli");
-        //break;
+        case '4':  interpreter("t04.cli");
+        break;
+        case '5':  interpreter("t05.cli");
+        break;
+        case '6':  interpreter("t06.cli");
+        break;
+        case '7':  interpreter("t07.cli");
+        break;
         //case '8':  interpreter("t08.cli");
         //break;
         //case '9':  interpreter("t09.cli");
         //break;
-        //case '0':  interpreter("t10.cli");
-        //break;
+        case '0':  interpreter("testing.cli");
+        break;
         case 'q':  exit();
         break;
     }
@@ -119,16 +147,102 @@ void interpreter(String filename)
         {
             float radius = float(token[1]);
             PVector center = new PVector(float(token[2]), float(token[3]), float(token[4]));
+            if(isPush){
+                float[][] transformedMat = new float[4][1];
+                transformedMat[0][0] =  float(token[1]);
+                transformedMat[1][0] =  float(token[2]);
+                transformedMat[2][0] =  float(token[3]);
+                transformedMat[3][0] =  1.0;
+                for(int a = transformStackList.size()-1; a >=0 ; a--){
+                 print(" "+transformStackList.get(a).level);
+                   if(transformStackList.get(a).level<=currentLevel){
+                     transformedMat = matrixMult(transformStackList.get(a).tranMat, transformedMat);
+                     //println("Transformed Matrix");
+                     //printMat(vertMat);
+                   }
+               } print("\n");
+               center.x = transformedMat[0][0]/transformedMat[3][0];
+               center.y = transformedMat[1][0]/transformedMat[3][0];
+               center.z = transformedMat[2][0]/transformedMat[3][0];
+            }
             Material sphereSurface = new Material(currentSurface);
             Sphere sphere = new Sphere(radius, center, sphereSurface);
             renderList.add(sphere);
             
-            println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
+            //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
         }
         else if (token[0].equals("read"))
         {
             // reads input from another file
             interpreter (token[1]);
+        }
+        else if (token[0].equals("begin")){
+          //Ignore
+        }
+        else if (token[0].equals("vertex")){
+            PVector vertex = new PVector(float(token[1]), float(token[2]), float(token[3]));
+            if(isPush){
+               float[][] transformedMat = new float[4][1];
+               vertMat[0][0] =  float(token[1]);
+               vertMat[1][0] =  float(token[2]);
+               vertMat[2][0] =  float(token[3]);
+               vertMat[3][0] =  1.0;
+               for(int a = transformStackList.size()-1; a >=0 ; a--){
+                 print(" "+transformStackList.get(a).level);
+                 if(transformStackList.get(a).level<=currentLevel){
+                   vertMat = matrixMult(transformStackList.get(a).tranMat, vertMat);
+                   //println("Transformed Matrix");
+                   //printMat(vertMat);
+                 }
+               }
+               vertex.x = vertMat[0][0]/vertMat[3][0];
+               vertex.y = vertMat[1][0]/vertMat[3][0];
+               vertex.z = vertMat[2][0]/vertMat[3][0];
+               vertices.add(vertex);
+            }
+            else{
+              vertices.add(vertex);
+            }
+            if(vertices.size() == 3)
+              {
+                  Material triangleShader = new Material(currentSurface);
+                  Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
+                  renderList.add((RenderObj)triangle);
+                  //println("Vertices of the Triangle");
+                  //println(vertices.get(0));
+                  //println(vertices.get(1));
+                  //println(vertices.get(2));
+                  vertices.clear();
+              }
+        }
+        else if (token[0].equals("end")){
+          //Ignore
+        }
+        else if (token[0].equals("push")){
+          isPush = true;
+          currentLevel++;
+        }
+        else if (token[0].equals("pop")){
+          isPush = false;
+          
+          for (Iterator<RenderStack> iterator = transformStackList.iterator(); iterator.hasNext(); ) {
+            RenderStack a = iterator.next();
+            if(a.level == currentLevel){
+              iterator.remove();
+            }
+          }
+          currentLevel--;
+          
+        //transformList.pop();
+        }
+        else if (token[0].equals("translate")){
+          transformStackList.add(new RenderStack(createTranslateMat(float(token[1]), float(token[2]), float(token[3])), currentLevel));
+        }
+        else if (token[0].equals("rotate")){
+          transformStackList.add(new RenderStack(createRotateMat(float(token[1]), float(token[2]), float(token[3]), float(token[4])), currentLevel));
+        }
+        else if (token[0].equals("scale")){
+          transformStackList.add(new RenderStack(createScaleMat(float(token[1]), float(token[2]), float(token[3])), currentLevel));
         }
         else if (token[0].equals("color"))
         {
@@ -149,9 +263,11 @@ void interpreter(String filename)
         }
         else if (token[0].equals("write"))
         {
+          println("renderlist size"+ renderList.size());
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
+          boolean test = true;
            for(int u = 0; u < height; u++){
              for(int v = 0; v < width; v++){
                int correctU = 299 - u;
@@ -163,10 +279,15 @@ void interpreter(String filename)
                direction.normalize();
                //Create a ray from eye to this pixel direction
                Ray currentRay = new Ray(origin, direction);
+               
                //Loops through all the renderable objects
                if(renderList.size() > 0)
                {  
                  int closestObj = firstIntersection(renderList, currentRay);
+                 if(closestObj != -1 && test){
+                   println("test");
+                   test= false;
+                 }
                  //No intersection happened
                  if(closestObj == -1 )
                  {
@@ -176,9 +297,10 @@ void interpreter(String filename)
                  {
                       RenderObj currentRenderObj = renderList.get(closestObj);
                       RayCollInfo rayCollInfo = currentRenderObj.intersection(currentRay);
+
                       if(rayCollInfo.isHit)
                       {
-                          colorArray[correctU][v] = getColor(lights, currentRenderObj, rayCollInfo);
+                          colorArray[correctU][v] = getColor(lights,renderList,currentRenderObj, rayCollInfo);
                       }
                       else
                       {
