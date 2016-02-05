@@ -87,8 +87,8 @@ void keyPressed()
         break;
         case '6':  interpreter("t06.cli");
         break;
-        //case '7':  interpreter("t07.cli");
-        //break;
+        case '7':  interpreter("t07.cli");
+        break;
         //case '8':  interpreter("t08.cli");
         //break;
         //case '9':  interpreter("t09.cli");
@@ -147,11 +147,29 @@ void interpreter(String filename)
         {
             float radius = float(token[1]);
             PVector center = new PVector(float(token[2]), float(token[3]), float(token[4]));
+            if(isPush){
+                float[][] transformedMat = new float[4][1];
+                transformedMat[0][0] =  float(token[1]);
+                transformedMat[1][0] =  float(token[2]);
+                transformedMat[2][0] =  float(token[3]);
+                transformedMat[3][0] =  1.0;
+                for(int a = transformStackList.size()-1; a >=0 ; a--){
+                   if(transformStackList.get(a).level<=currentLevel){
+                     printMat(transformStackList.get(a).tranMat);
+                     transformedMat = matrixMult(transformStackList.get(a).tranMat, transformedMat);
+                     //println("Transformed Matrix");
+                     //printMat(vertMat);
+                   }
+               }
+               center.x = transformedMat[0][0]/transformedMat[3][0];
+               center.y = transformedMat[1][0]/transformedMat[3][0];
+               center.z = transformedMat[2][0]/transformedMat[3][0];
+            }
             Material sphereSurface = new Material(currentSurface);
             Sphere sphere = new Sphere(radius, center, sphereSurface);
             renderList.add(sphere);
             
-            println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
+            //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
         }
         else if (token[0].equals("read"))
         {
@@ -169,9 +187,6 @@ void interpreter(String filename)
                vertMat[1][0] =  float(token[2]);
                vertMat[2][0] =  float(token[3]);
                vertMat[3][0] =  1.0;
-               //Collections.sort(transformStackList, new CustomComparator());
-     //          Collections.reverse(transformStackList);
-               println(transformStackList.size());
                for(int a = transformStackList.size()-1; a >=0 ; a--){
                  if(transformStackList.get(a).level<=currentLevel){
                    vertMat = matrixMult(transformStackList.get(a).tranMat, vertMat);

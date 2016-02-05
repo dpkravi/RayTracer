@@ -107,8 +107,8 @@ float [][] createTranslateMat(float t1, float t2, float t3){
       { 0, 0, 1, t3},
       { 0, 0, 0, 1},
     };
-    println("The Translation Matrix");
-    printMat(result);
+    //println("The Translation Matrix");
+    //printMat(result);
     return result;
 }
 
@@ -119,8 +119,8 @@ float [][] createScaleMat(float s1, float s2, float s3){
       { 0, 0, s3, 0},
       { 0, 0, 0, 1},
     };
-    println("The Scaling Matrix");
-    printMat(result);
+    //println("The Scaling Matrix");
+    //printMat(result);
     return result;
 }
 
@@ -141,17 +141,19 @@ float [][] createRotateMat(float angleInDegrees, float u, float v, float w){
     result[2][0] = u*w*(1-cos(angle))-v*sin(angle);
     result[2][1] = v*w*(1-cos(angle))+u*sin(angle);
     result[2][2] = w*w + (1-w)*(1-w)*cos(angle); 
-    println("The Rotation Matrix");
-    printMat(result);
+    //println("The Rotation Matrix");
+    //printMat(result);
     return result;
 }
 
 void printMat(float[][] matrix){
   int rows = matrix.length;
   int columns = matrix[0].length;
+  println(" ");
+  println("Matrix");
   for (int i = 0; i < rows; i++) {
       for (int j = 0; j < columns; j++) {
-          System.out.print(matrix[i][j] + " ");
+          System.out.print(matrix[i][j] + "\t");
       }
       System.out.print("\n");
   }
