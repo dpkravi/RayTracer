@@ -172,10 +172,10 @@ class Triangle extends RenderObj
 
         normal.normalize();
         
-        if((edge2.dot(edge1))>0){
-            normal.x = -normal.x;
-            normal.y = -normal.y;
-            normal.z = -normal.z;
+        
+        // Invert the normals when they are flipped
+        if(normal.dot(r.direction)>0){
+            normal.mult(-1);
         }
         
         // Implementing the Möller–Trumbore intersection algorithm   -   https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
