@@ -169,7 +169,14 @@ class Triangle extends RenderObj
         
         //Cross product of the two edges gives the surface normal of the triangle
         PVector normal = edge1.cross(edge2);
+
         normal.normalize();
+        
+        if((edge2.dot(edge1))>0){
+            normal.x = -normal.x;
+            normal.y = -normal.y;
+            normal.z = -normal.z;
+        }
         
         // Implementing the Möller–Trumbore intersection algorithm   -   https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
         
@@ -237,4 +244,16 @@ class RenderStack{
       tranMat = matrix;
       level = lvl;
     }
+}
+
+class CustomComparator implements Comparator<RenderStack> {
+    @Override
+    public int compare(RenderStack o1, RenderStack o2) {
+      if(o1.level<o2.level)
+        return 1;
+      else if(o1.level==o2.level)
+        return 0;
+      else
+        return -1;
+   }
 }

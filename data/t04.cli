@@ -14,6 +14,10 @@ point_light 4 4 8  .7 .7 .7
 
 diffuse  .8 .8 .8  .2 .2 .2
 
+push
+
+rotate 0 0 0 1
+
 begin
 vertex 0.525731 0.850651 -3
 vertex 0.850651 0 -3.525731
@@ -133,5 +137,7 @@ vertex 0 -0.525731 -2.149349
 vertex -0.525731 -0.850651 -3
 vertex -0.850651 0 -2.474269
 end
+
+pop
 
 write t04.png

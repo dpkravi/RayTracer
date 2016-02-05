@@ -4,6 +4,9 @@
 //
 ///////////////////////////////////////////////////////////////////////
 import java.util.Stack;
+import java.util.Iterator;
+import java.util.Comparator;
+import java.util.Collections;
 
 boolean test1 = true;
     
@@ -90,8 +93,8 @@ void keyPressed()
         //break;
         //case '9':  interpreter("t09.cli");
         //break;
-        //case '0':  interpreter("t10.cli");
-        //break;
+        case '0':  interpreter("testing.cli");
+        break;
         case 'q':  exit();
         break;
     }
@@ -166,11 +169,13 @@ void interpreter(String filename)
                vertMat[1][0] =  float(token[2]);
                vertMat[2][0] =  float(token[3]);
                vertMat[3][0] =  1.0;
+               //Collections.sort(transformStackList, new CustomComparator());
+     //          Collections.reverse(transformStackList);
                for(int a = 0; a < transformStackList.size(); a++){
                  if(transformStackList.get(a).level<=currentLevel){
                    vertMat = matrixMult(transformStackList.get(a).tranMat, vertMat);
-                   println("Transformed Matrix");
-                   printMat(vertMat);
+                   //println("Transformed Matrix");
+                   //printMat(vertMat);
                  }
                }
                vertex.x = vertMat[0][0]/vertMat[3][0];
@@ -202,8 +207,16 @@ void interpreter(String filename)
         }
         else if (token[0].equals("pop")){
           isPush = false;
+          
+          for (Iterator<RenderStack> iterator = transformStackList.iterator(); iterator.hasNext(); ) {
+            RenderStack a = iterator.next();
+            if(a.level == currentLevel){
+              iterator.remove();
+            }
+          }
           currentLevel--;
-        //   transformList.pop();
+          
+        //transformList.pop();
         }
         else if (token[0].equals("translate")){
           transformStackList.add(new RenderStack(createTranslateMat(float(token[1]), float(token[2]), float(token[3])), currentLevel));
@@ -267,6 +280,7 @@ void interpreter(String filename)
                  {
                       RenderObj currentRenderObj = renderList.get(closestObj);
                       RayCollInfo rayCollInfo = currentRenderObj.intersection(currentRay);
+                      println(rayCollInfo.normal);
                       if(rayCollInfo.isHit)
                       {
                           colorArray[correctU][v] = getColor(lights,renderList,currentRenderObj, rayCollInfo);
