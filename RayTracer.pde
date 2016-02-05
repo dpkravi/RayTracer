@@ -3,6 +3,11 @@
 //  Ray Tracing Shell
 //
 ///////////////////////////////////////////////////////////////////////
+
+boolean test1 = true;
+    
+    
+    
 int screen_width = 300;
 int screen_height = 300;
 // global matrix values
@@ -12,7 +17,7 @@ float[] gmat = new float[16];
 
 //////////////////////My CODE////////////////////////////////
 ArrayList<RenderObj> renderList = new ArrayList<RenderObj>();
-ArrayList<PVector> vertexList = new ArrayList<PVector>();
+ArrayList<PVector> vertices = new ArrayList<PVector>();
 ArrayList<Light> lights = new ArrayList<Light>();
 PVector[][] colorArray = new PVector[300][300];
 Material currentSurface;
@@ -24,6 +29,7 @@ float camTop;
 float camBottom;
 float camLeft;
 float camRight;
+boolean shadows;
 
 /////////////////////////////////////////////////////////////////////
 // Some initializations for the scene.
@@ -45,6 +51,7 @@ void setup()
 // Press key 1 to 9 and 0 to run different test cases.
 void keyPressed()
 {
+    test1 = true;
     switch(key)
     {
         case '1':  interpreter("t01.cli");
@@ -53,8 +60,8 @@ void keyPressed()
         break;
         case '3':  interpreter("t03.cli");
         break;
-        //case '4':  interpreter("t04.cli");
-        //break;
+        case '4':  interpreter("t04.cli");
+        break;
         //case '5':  interpreter("t05.cli");
         //break;
         //case '6':  interpreter("t06.cli");
@@ -130,6 +137,43 @@ void interpreter(String filename)
             // reads input from another file
             interpreter (token[1]);
         }
+        else if (token[0].equals("begin")){
+          //Ignore
+        }
+        else if (token[0].equals("vertex")){
+            PVector vertex = new PVector(float(token[1]), float(token[2]), float(token[3]));
+            vertices.add(vertex);
+            if(vertices.size() == 3)
+            {
+                Material triangleShader = new Material(currentSurface);
+                Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
+                renderList.add((RenderObj)triangle);
+                println("Vertices of the Triangle");
+                println(vertices.get(0));
+                println(vertices.get(1));
+                println(vertices.get(2));
+                vertices.clear();
+            }
+            
+        }
+        else if (token[0].equals("end")){
+          //Ignore
+        }
+        else if (token[0].equals("push")){
+          //Ignore
+        }
+        else if (token[0].equals("pop")){
+          //Ignore
+        }
+        else if (token[0].equals("end")){
+          //Ignore
+        }
+        else if (token[0].equals("end")){
+          //Ignore
+        }
+        else if (token[0].equals("end")){
+          //Ignore
+        }
         else if (token[0].equals("color"))
         {
             // example command -- not part of ray tracer
@@ -149,9 +193,11 @@ void interpreter(String filename)
         }
         else if (token[0].equals("write"))
         {
+          println("renderlist size"+ renderList.size());
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
+          boolean test = true;
            for(int u = 0; u < height; u++){
              for(int v = 0; v < width; v++){
                int correctU = 299 - u;
@@ -163,10 +209,15 @@ void interpreter(String filename)
                direction.normalize();
                //Create a ray from eye to this pixel direction
                Ray currentRay = new Ray(origin, direction);
+               
                //Loops through all the renderable objects
                if(renderList.size() > 0)
                {  
                  int closestObj = firstIntersection(renderList, currentRay);
+                 if(closestObj != -1 && test){
+                   println("test");
+                   test= false;
+                 }
                  //No intersection happened
                  if(closestObj == -1 )
                  {
@@ -178,7 +229,7 @@ void interpreter(String filename)
                       RayCollInfo rayCollInfo = currentRenderObj.intersection(currentRay);
                       if(rayCollInfo.isHit)
                       {
-                          colorArray[correctU][v] = getColor(lights, currentRenderObj, rayCollInfo);
+                          colorArray[correctU][v] = getColor(lights,renderList,currentRenderObj, rayCollInfo);
                       }
                       else
                       {

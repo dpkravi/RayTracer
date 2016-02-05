@@ -1,21 +1,21 @@
-# colored lights
+# one white triangle, shifted using translation
 
 fov 60
+point_light 0 0 0 1 1 1
+background 0.3 0.3 0.7
 
-# blue background
+diffuse   0.8 0.8 0.8   0 0 0
 
-background 0.2 0.2 1
+push
 
-# three light sources (red, green, blue)
+translate 0.5 0.5 0
 
-point_light  3 4  0  .8 .2 .2
-point_light -3 4  0  .2 .8 .2
-point_light  0 -4 0  .2 .2 .8
+begin
+vertex  0 -1 -2
+vertex  -1 1 -2
+vertex   1 1 -2
+end
 
-# sphere
-
-diffuse  .8 .8 .8  .2 .2 .2 
-sphere  1  0 0 -3
+pop
 
 write t03.png
-
