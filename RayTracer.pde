@@ -85,8 +85,8 @@ void keyPressed()
         break;
         case '5':  interpreter("t05.cli");
         break;
-        //case '6':  interpreter("t06.cli");
-        //break;
+        case '6':  interpreter("t06.cli");
+        break;
         //case '7':  interpreter("t07.cli");
         //break;
         //case '8':  interpreter("t08.cli");
@@ -171,7 +171,8 @@ void interpreter(String filename)
                vertMat[3][0] =  1.0;
                //Collections.sort(transformStackList, new CustomComparator());
      //          Collections.reverse(transformStackList);
-               for(int a = 0; a < transformStackList.size(); a++){
+               println(transformStackList.size());
+               for(int a = transformStackList.size()-1; a >=0 ; a--){
                  if(transformStackList.get(a).level<=currentLevel){
                    vertMat = matrixMult(transformStackList.get(a).tranMat, vertMat);
                    //println("Transformed Matrix");
@@ -191,10 +192,10 @@ void interpreter(String filename)
                   Material triangleShader = new Material(currentSurface);
                   Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
                   renderList.add((RenderObj)triangle);
-                  println("Vertices of the Triangle");
-                  println(vertices.get(0));
-                  println(vertices.get(1));
-                  println(vertices.get(2));
+                  //println("Vertices of the Triangle");
+                  //println(vertices.get(0));
+                  //println(vertices.get(1));
+                  //println(vertices.get(2));
                   vertices.clear();
               }
         }
@@ -280,7 +281,7 @@ void interpreter(String filename)
                  {
                       RenderObj currentRenderObj = renderList.get(closestObj);
                       RayCollInfo rayCollInfo = currentRenderObj.intersection(currentRay);
-                      println(rayCollInfo.normal);
+
                       if(rayCollInfo.isHit)
                       {
                           colorArray[correctU][v] = getColor(lights,renderList,currentRenderObj, rayCollInfo);
