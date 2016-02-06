@@ -237,23 +237,31 @@ class Triangle extends RenderObj
     }
 }
 
-class RenderStack{
-    float[][] tranMat;
-    int level;
-    RenderStack(float[][] matrix, int lvl){
-      tranMat = matrix;
-      level = lvl;
-    }
-}
+public class MatrixStack {
+  private int size = 0;
+  private PMatrix3D tranMats[];
+  private static final int max = 50;
 
-class CustomComparator implements Comparator<RenderStack> {
-    @Override
-    public int compare(RenderStack o1, RenderStack o2) {
-      if(o1.level<o2.level)
-        return 1;
-      else if(o1.level==o2.level)
-        return 0;
-      else
-        return -1;
-   }
-}
+    public MatrixStack() {
+        tranMats = new PMatrix3D[max];
+        for(int i=0; i<max; ++i) {
+          tranMats[i] = new PMatrix3D();
+          tranMats[i].reset();
+        }
+    }
+    public void push(PMatrix3D matrix) {
+        if(size == tranMats.length) {
+          print("Matrix Stack capacity exceeded");
+          return;
+        }   
+        tranMats[size].set(matrix);
+        size++;
+    }
+    public PMatrix3D pop() {
+        PMatrix3D matrix = new PMatrix3D(); 
+        matrix.set(tranMats[size - 1]);
+        tranMats[size-1].reset();
+        size--;
+        return matrix;
+    }
+};

@@ -27,27 +27,27 @@ push
 translate 0 -0.8 -6
 read sphere_ring.cli
 
-translate 0 0.7 0
+translate 0 0.3 0
 rotate 5 0 1 0
 read sphere_ring.cli
 
-translate 0 0.7 0
+translate 0 0.3 0
 rotate 5 0 1 0
 read sphere_ring.cli
 
-translate 0 0.7 0
+translate 0 0.3 0
 rotate 5 0 1 0
 read sphere_ring.cli
 
-translate 0 0.7 0
+translate 0 0.3 0
 rotate 5 0 1 0
 read sphere_ring.cli
 
-translate 0 0.7 0
+translate 0 0.3 0
 rotate 5 0 1 0
 read sphere_ring.cli
 
-translate 0 0.7 0
+translate 0 0.3 0
 rotate 5 0 1 0
 read sphere_ring.cli
 
