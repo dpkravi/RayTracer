@@ -148,7 +148,6 @@ class Triangle extends RenderObj
     PVector vertex1;
     PVector vertex2;
     PVector vertex3;
-  //  int counter = 0;
     Triangle(PVector v1, PVector v2, PVector v3, Material m)
     {
         super(m);

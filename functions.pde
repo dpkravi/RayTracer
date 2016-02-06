@@ -62,7 +62,6 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
             if(shadowIntersection.isHit && shadowIntersection.rootVal <= lParam)
             {
                 shadows = true;
-                ///////////////////FIND DIFFERENT WAY TO BREAK OUT OF LOOP
                 j = renderList.size();
               
             }

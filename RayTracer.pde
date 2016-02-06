@@ -54,8 +54,8 @@ void setup()
     
     //Initializing the matrices and reseting it
     matrixStack = new MatrixStack();
-    mMat = new PMatrix3D();
-    mMat.reset();
+    matrix = new PMatrix3D();
+    matrix.reset();
     //resetMatrix();
     // you may want to reset the matrix here
     interpreter("rect_test.cli");
@@ -146,7 +146,7 @@ void interpreter(String filename)
             m[0] = center.x; 
             m[1] = center.y; 
             m[2] = center.z;
-            mMat.mult(m,result);
+            matrix.mult(m,result);
             
             center.x = result[0];
             center.y = result[1];
@@ -167,16 +167,14 @@ void interpreter(String filename)
           //Ignore
         }
         else if (token[0].equals("vertex")){
-            float[] vm = new float[3];
+            float[] result = new float[3];
             float[] v = new float[3];
             v[0] = float(token[1]); 
             v[1] = float(token[2]); 
             v[2] = float(token[3]);
-            println(v);
-            println(vm);
-            mMat.mult(v,vm);        
+            matrix.mult(v,result);        
 
-            vertices.add(new PVector(vm[0], vm[1], vm[2]));
+            vertices.add(new PVector(result[0], result[1], result[2]));
             if(vertices.size() == 3)
               {
                   Material triangleShader = new Material(currentSurface);
@@ -193,21 +191,21 @@ void interpreter(String filename)
           //Ignore
         }
         else if (token[0].equals("push")){
-          matrixStack.push(mMat);
+          matrixStack.push(matrix);
         }
         else if (token[0].equals("pop")){
           PMatrix3D mat = new PMatrix3D();
           mat = matrixStack.pop();
-          mMat.set(mat);
+          matrix.set(mat);
         }
         else if (token[0].equals("translate")){
-          mMat.translate(float(token[1]), float(token[2]), float(token[3]));
+          matrix.translate(float(token[1]), float(token[2]), float(token[3]));
         }
         else if (token[0].equals("rotate")){
-          mMat.rotate(radians(float(token[1])),float(token[2]), float(token[3]), float(token[4]));
+          matrix.rotate(radians(float(token[1])),float(token[2]), float(token[3]), float(token[4]));
         }
         else if (token[0].equals("scale")){
-          mMat.scale(float(token[1]), float(token[2]), float(token[3]));
+          matrix.scale(float(token[1]), float(token[2]), float(token[3]));
         }
         else if (token[0].equals("color"))
         {
@@ -228,7 +226,7 @@ void interpreter(String filename)
         }
         else if (token[0].equals("write"))
         {
-          println("renderlist size"+ renderList.size());
+          println("Renderlist size : "+ renderList.size());
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
