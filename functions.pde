@@ -62,7 +62,6 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
             if(shadowIntersection.isHit && shadowIntersection.rootVal <= lParam)
             {
                 shadows = true;
-                ///////////////////FIND DIFFERENT WAY TO BREAK OUT OF LOOP
                 j = renderList.size();
               
             }
@@ -86,6 +85,7 @@ PVector createVec(PVector pt1, PVector pt2){
     return new PVector(pt2.x-pt1.x, pt2.y-pt1.y, pt2.z-pt1.z);
 }  
 
+//These are useless now. Using PMatrix3D instead
 float[][] matrixMult(float[][] A, float[][] B) {
     int mA = A.length;
     int nA = A[0].length;

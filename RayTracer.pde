@@ -3,10 +3,6 @@
 //  Ray Tracing Shell
 //
 ///////////////////////////////////////////////////////////////////////
-import java.util.Stack;
-import java.util.Iterator;
-import java.util.Comparator;
-import java.util.Collections;
 
 boolean test1 = true;
     
@@ -26,11 +22,6 @@ ArrayList<PVector> vertices = new ArrayList<PVector>();
 ArrayList<Light> lights = new ArrayList<Light>();
 PVector[][] colorArray = new PVector[300][300];
 
-ArrayList<float[][]> transformList = new ArrayList<float[][]>();
-//Stack<ArrayList<float[][]>> stackList = new Stack<ArrayList<float[][]>>();
-
-ArrayList<RenderStack> transformStackList = new ArrayList<RenderStack>();
-
 Material currentSurface;
 PVector backgroundColor = new PVector(0,0,0);
 //Camera Variables
@@ -43,12 +34,10 @@ float camRight;
 boolean shadows;
 int currentLevel = 0;;
 
-float[][] vertMat = new float[4][1];
 
-float[][] transformMat = new float[4][4];
-float[][] currentMatrix = new float[4][4];
-//Stack<float[][]> matrixStack = new Stack<float[][]>();
-
+ MatrixStack matrixStack;
+ PMatrix3D matrix;
+    
 /////////////////////////////////////////////////////////////////////
 // Some initializations for the scene.
 void setup()
@@ -62,6 +51,11 @@ void setup()
     PMatrix3D global_mat = (PMatrix3D) getMatrix();
     global_mat.get(gmat);
     printMatrix();
+    
+    //Initializing the matrices and reseting it
+    matrixStack = new MatrixStack();
+    matrix = new PMatrix3D();
+    matrix.reset();
     //resetMatrix();
     // you may want to reset the matrix here
     interpreter("rect_test.cli");
@@ -70,8 +64,6 @@ void setup()
 void keyPressed()
 {
     test1 = true;
-    transformList.clear();
-    transformStackList.clear();
     
     switch(key)
     {
@@ -93,8 +85,8 @@ void keyPressed()
         //break;
         //case '9':  interpreter("t09.cli");
         //break;
-        case '0':  interpreter("testing.cli");
-        break;
+        //case '0':  interpreter("testing.cli");
+        //break;
         case 'q':  exit();
         break;
     }
@@ -107,6 +99,7 @@ void keyPressed()
 //  Note: Function "splitToken()" is only available in processing 1.25 or higher.
 void interpreter(String filename)
 {
+  
     String str[] = loadStrings(filename);
     if (str == null) 
         println("Error! Failed to read the file.");
@@ -147,24 +140,18 @@ void interpreter(String filename)
         {
             float radius = float(token[1]);
             PVector center = new PVector(float(token[2]), float(token[3]), float(token[4]));
-            if(isPush){
-                float[][] transformedMat = new float[4][1];
-                transformedMat[0][0] =  float(token[1]);
-                transformedMat[1][0] =  float(token[2]);
-                transformedMat[2][0] =  float(token[3]);
-                transformedMat[3][0] =  1.0;
-                for(int a = transformStackList.size()-1; a >=0 ; a--){
-                 print(" "+transformStackList.get(a).level);
-                   if(transformStackList.get(a).level<=currentLevel){
-                     transformedMat = matrixMult(transformStackList.get(a).tranMat, transformedMat);
-                     //println("Transformed Matrix");
-                     //printMat(vertMat);
-                   }
-               } print("\n");
-               center.x = transformedMat[0][0]/transformedMat[3][0];
-               center.y = transformedMat[1][0]/transformedMat[3][0];
-               center.z = transformedMat[2][0]/transformedMat[3][0];
-            }
+            
+            float[] result = new float[3];
+            float[] m = new float[3];
+            m[0] = center.x; 
+            m[1] = center.y; 
+            m[2] = center.z;
+            matrix.mult(m,result);
+            
+            center.x = result[0];
+            center.y = result[1];
+            center.z = result[2];
+            
             Material sphereSurface = new Material(currentSurface);
             Sphere sphere = new Sphere(radius, center, sphereSurface);
             renderList.add(sphere);
@@ -180,29 +167,14 @@ void interpreter(String filename)
           //Ignore
         }
         else if (token[0].equals("vertex")){
-            PVector vertex = new PVector(float(token[1]), float(token[2]), float(token[3]));
-            if(isPush){
-               float[][] transformedMat = new float[4][1];
-               vertMat[0][0] =  float(token[1]);
-               vertMat[1][0] =  float(token[2]);
-               vertMat[2][0] =  float(token[3]);
-               vertMat[3][0] =  1.0;
-               for(int a = transformStackList.size()-1; a >=0 ; a--){
-                 print(" "+transformStackList.get(a).level);
-                 if(transformStackList.get(a).level<=currentLevel){
-                   vertMat = matrixMult(transformStackList.get(a).tranMat, vertMat);
-                   //println("Transformed Matrix");
-                   //printMat(vertMat);
-                 }
-               }
-               vertex.x = vertMat[0][0]/vertMat[3][0];
-               vertex.y = vertMat[1][0]/vertMat[3][0];
-               vertex.z = vertMat[2][0]/vertMat[3][0];
-               vertices.add(vertex);
-            }
-            else{
-              vertices.add(vertex);
-            }
+            float[] result = new float[3];
+            float[] v = new float[3];
+            v[0] = float(token[1]); 
+            v[1] = float(token[2]); 
+            v[2] = float(token[3]);
+            matrix.mult(v,result);        
+
+            vertices.add(new PVector(result[0], result[1], result[2]));
             if(vertices.size() == 3)
               {
                   Material triangleShader = new Material(currentSurface);
@@ -219,30 +191,21 @@ void interpreter(String filename)
           //Ignore
         }
         else if (token[0].equals("push")){
-          isPush = true;
-          currentLevel++;
+          matrixStack.push(matrix);
         }
         else if (token[0].equals("pop")){
-          isPush = false;
-          
-          for (Iterator<RenderStack> iterator = transformStackList.iterator(); iterator.hasNext(); ) {
-            RenderStack a = iterator.next();
-            if(a.level == currentLevel){
-              iterator.remove();
-            }
-          }
-          currentLevel--;
-          
-        //transformList.pop();
+          PMatrix3D mat = new PMatrix3D();
+          mat = matrixStack.pop();
+          matrix.set(mat);
         }
         else if (token[0].equals("translate")){
-          transformStackList.add(new RenderStack(createTranslateMat(float(token[1]), float(token[2]), float(token[3])), currentLevel));
+          matrix.translate(float(token[1]), float(token[2]), float(token[3]));
         }
         else if (token[0].equals("rotate")){
-          transformStackList.add(new RenderStack(createRotateMat(float(token[1]), float(token[2]), float(token[3]), float(token[4])), currentLevel));
+          matrix.rotate(radians(float(token[1])),float(token[2]), float(token[3]), float(token[4]));
         }
         else if (token[0].equals("scale")){
-          transformStackList.add(new RenderStack(createScaleMat(float(token[1]), float(token[2]), float(token[3])), currentLevel));
+          matrix.scale(float(token[1]), float(token[2]), float(token[3]));
         }
         else if (token[0].equals("color"))
         {
@@ -263,7 +226,7 @@ void interpreter(String filename)
         }
         else if (token[0].equals("write"))
         {
-          println("renderlist size"+ renderList.size());
+          println("Renderlist size : "+ renderList.size());
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
