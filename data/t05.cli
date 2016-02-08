@@ -1,19 +1,39 @@
-# a cube
+# testing soft shadows, one sample per pixel
+
+rays_per_pixel 1
 
 fov 60
-point_light 4 4 8  1 1 1
-background 0.6 0.6 0.9
 
-push
+# blue background
 
-translate 0 0 -5
-rotate 20 1 0 0
-rotate -30 0 1 0
+background 0.2 0.2 1
 
-diffuse 0.9 0.9 0.9  0.2 0.2 0.2
+# light sources 
 
-read box.cli
+disk_light  2 5 -4  0.9  1 0 0  .8 .8 .8
+point_light -3 4 0  .2 .2 .2
 
-pop
+# these two triangles acts as a ground plane
+
+diffuse  .8 .8 .8  .2 .2 .2
+
+begin
+vertex -100 -1 -100
+vertex  100 -1 -100
+vertex  100 -1  100
+end
+
+begin
+vertex  100 -1  100
+vertex -100 -1  100
+vertex -100 -1 -100
+end
+
+# sphere resting on ground
+
+diffuse  .8 .8 .8  .2 .2 .2 
+
+sphere  1  0 0 -4
 
 write t05.png
+

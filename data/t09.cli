@@ -1,8 +1,8 @@
-# testing depth-of-field, one ray per pixel
+# testing depth-of-field, multiple rays per pixel
 
-rays_per_pixel 1
+rays_per_pixel 100
 
-lens  0.08  3
+lens  0.1  6
 
 fov 60
 
@@ -83,5 +83,5 @@ vertex -100 -2  100
 vertex -100 -2 -100
 end
 
-write t07.png
+write t09.png
 
