@@ -42,6 +42,10 @@ class Ray
 {
     PVector origin;
     PVector direction;
+    Ray(){
+        origin = new PVector(0,0,0);
+        direction = new PVector(0,0,0);
+    }
     Ray(PVector origin, PVector direction)
     {
         this.origin = origin;

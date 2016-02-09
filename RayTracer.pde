@@ -32,7 +32,7 @@ float camBottom;
 float camLeft;
 float camRight;
 boolean shadows;
-int currentLevel = 0;;
+int raysPerPixel;
 
 
  MatrixStack matrixStack;
@@ -47,6 +47,7 @@ void setup()
     noStroke();
     colorMode (RGB, 1.0);
     background (0, 0, 0);
+    raysPerPixel = 1;
     // grab the global matrix values (to use later when drawing pixels)
     PMatrix3D global_mat = (PMatrix3D) getMatrix();
     global_mat.get(gmat);
@@ -64,7 +65,8 @@ void setup()
 void keyPressed()
 {
     test1 = true;
-    
+    raysPerPixel = 1;
+    matrix.reset();
     switch(key)
     {
         case '1':  interpreter("t01.cli");
@@ -207,6 +209,10 @@ void interpreter(String filename)
         else if (token[0].equals("scale")){
           matrix.scale(float(token[1]), float(token[2]), float(token[3]));
         }
+        else if (token[0].equals("rays_per_pixel")){
+          raysPerPixel = int(token[1]);
+          println("Rays per pixel : "+raysPerPixel);
+        }
         else if (token[0].equals("color"))
         {
             // example command -- not part of ray tracer
@@ -231,47 +237,33 @@ void interpreter(String filename)
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
           boolean test = true;
+          Ray currentRay = new Ray();
            for(int u = 0; u < height; u++){
              for(int v = 0; v < width; v++){
                int correctU = 299 - u;
-               colorArray[correctU][v] = new PVector(-1,-1,-1);
-               PVector origin = new PVector(0,0,0);
-               PVector target = new PVector(camLeft + ((camRight-camLeft)*(v+.5)/width), camBottom+ ((camTop-camBottom)*(u+.5)/height), -1.0);
-               PVector direction = new PVector(target.x - origin.x, target.y - origin.y, -1.0); 
-               //Normalizing the direction
-               direction.normalize();
-               //Create a ray from eye to this pixel direction
-               Ray currentRay = new Ray(origin, direction);
-               
-               //Loops through all the renderable objects
-               if(renderList.size() > 0)
-               {  
-                 int closestObj = firstIntersection(renderList, currentRay);
-                 if(closestObj != -1 && test){
-                   println("test");
-                   test= false;
-                 }
-                 //No intersection happened
-                 if(closestObj == -1 )
-                 {
-                     colorArray[correctU][v] = backgroundColor;
-                 }
-                 else
-                 {
-                      RenderObj currentRenderObj = renderList.get(closestObj);
-                      RayCollInfo rayCollInfo = currentRenderObj.intersection(currentRay);
+               colorArray[correctU][v] = new PVector(0,0,0);
+               if(raysPerPixel == 1){
+                 //get ray to the center of the pixel
+                 currentRay = getRayAtPixel(u,v, true);
+                 colorArray[correctU][v] = computeColor(renderList, currentRay);
+               } 
+               else{
+                 PVector tempColor = new PVector(0,0,0);
+                 //Generating the required number of random rays
+                 for(int j = 0; j < raysPerPixel; j++){
+                   Ray tempR = getRayAtPixel(u,v, false); 
+                   tempColor = computeColor(renderList, tempR);
+                   
+                   colorArray[correctU][v].x = colorArray[correctU][v].x + tempColor.x;
+                   colorArray[correctU][v].y = colorArray[correctU][v].y + tempColor.y;
+                   colorArray[correctU][v].z = colorArray[correctU][v].z + tempColor.z;
 
-                      if(rayCollInfo.isHit)
-                      {
-                          colorArray[correctU][v] = getColor(lights,renderList,currentRenderObj, rayCollInfo);
-                      }
-                      else
-                      {
-                           colorArray[correctU][v] = backgroundColor;
-                      }
-                  }
                }
-               
+                 colorArray[correctU][v].x = (float) colorArray[correctU][v].x / (float) raysPerPixel;  
+                 colorArray[correctU][v].y = (float) colorArray[correctU][v].y / (float) raysPerPixel;
+                 colorArray[correctU][v].z = (float) colorArray[correctU][v].z / (float) raysPerPixel;
+               }
+        
              } 
            } 
             loadPixels();

@@ -85,74 +85,50 @@ PVector createVec(PVector pt1, PVector pt2){
     return new PVector(pt2.x-pt1.x, pt2.y-pt1.y, pt2.z-pt1.z);
 }  
 
-//These are useless now. Using PMatrix3D instead
-float[][] matrixMult(float[][] A, float[][] B) {
-    int mA = A.length;
-    int nA = A[0].length;
-    int mB = B.length;
-    int nB = B[0].length;
-    if (nA != mB) throw new RuntimeException("Illegal matrix dimensions.");
-    float[][] C = new float[mA][nB];
-    for (int i = 0; i < mA; i++)
-        for (int j = 0; j < nB; j++)
-            for (int k = 0; k < nA; k++)
-                C[i][j] += A[i][k] * B[k][j];
-    return C;
+Ray getRayAtPixel(int u, int v, boolean isCenter){
+  
+    Ray R = new Ray();
+    float un,vn;
+    //If single ray to center ( when 1 ray per pixel)
+    if(isCenter){
+        un = 0.5; vn = 0.5;
+    } else {    // When multiple rays per pixel
+        un = (float)Math.random();
+        vn = (float)Math.random();
+    }
+    
+    PVector origin = new PVector(0,0,0);
+    PVector target = new PVector(camLeft + ((camRight-camLeft)*(v+vn)/width), camBottom+ ((camTop-camBottom)*(u+un)/height), -1.0);
+    PVector direction = new PVector(target.x - origin.x, target.y - origin.y, -1.0); 
+    //Normalizing the direction
+    direction.normalize();
+    R.origin = origin;
+    R.direction = direction;
+    return R;
 }
 
-float [][] createTranslateMat(float t1, float t2, float t3){
-    float[][] result = new float[][]{
-      { 1, 0, 0, t1},
-      { 0, 1, 0, t2},
-      { 0, 0, 1, t3},
-      { 0, 0, 0, 1},
-    };
-    //println("The Translation Matrix");
-    //printMat(result);
-    return result;
-}
-
-float [][] createScaleMat(float s1, float s2, float s3){
-    float[][] result = new float[][]{
-      { s1, 0, 0, 0},
-      { 0, s2, 0, 0},
-      { 0, 0, s3, 0},
-      { 0, 0, 0, 1},
-    };
-    //println("The Scaling Matrix");
-    //printMat(result);
-    return result;
-}
-
-float [][] createRotateMat(float angleInDegrees, float u, float v, float w){
-    float[][] result = new float[][]{
-      { 0, 0, 0, 0},
-      { 0, 0, 0, 0},
-      { 0, 0, 0, 0},
-      { 0, 0, 0, 1},
-    };
-    float angle = ((angleInDegrees * PI)/180.0);
-    result[0][0] = u*u + (1-u)*(1-u)*cos(angle);        
-    result[0][1] = u*v*(1-cos(angle)) - w*sin(angle);      
-    result[0][2] = u*w*(1-cos(angle))+v*sin(angle);
-    result[1][0] = u*v*(1-cos(angle)) + w*sin(angle);
-    result[1][1] = v*v + (1-v)*(1-v)*cos(angle); 
-    result[1][2] = v*w*(1-cos(angle))-u*sin(angle);
-    result[2][0] = u*w*(1-cos(angle))-v*sin(angle);
-    result[2][1] = v*w*(1-cos(angle))+u*sin(angle);
-    result[2][2] = w*w + (1-w)*(1-w)*cos(angle); 
-    //println("The Rotation Matrix");
-    //printMat(result);
-    return result;
-}
-
-void printMat(float[][] matrix){
-  int rows = matrix.length;
-  int columns = matrix[0].length;
-  for (int i = 0; i < rows; i++) {
-      for (int j = 0; j < columns; j++) {
-          System.out.print(matrix[i][j] + "\t");
+PVector computeColor(ArrayList<RenderObj> renderList, Ray currentRay){
+    if(renderList.size() > 0)
+    {  
+      int closestObj = firstIntersection(renderList, currentRay);
+      //No intersection happened
+      if(closestObj == -1 )
+      {
+          return backgroundColor;
       }
-      System.out.print("\n");
-  }
+      else
+      {
+           RenderObj currentRenderObj = renderList.get(closestObj);
+           RayCollInfo rayCollInfo = currentRenderObj.intersection(currentRay);
+           if(rayCollInfo.isHit)
+           {
+               return(getColor(lights,renderList,currentRenderObj, rayCollInfo));
+           }
+           else
+           {
+                return(backgroundColor);
+           }
+       }
+    }
+    return null;
 }
