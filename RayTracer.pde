@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-boolean test1 = true;
+boolean test1 = true; 
     
 boolean isPush = false;
 // boolean isPop = false;
@@ -157,6 +157,40 @@ void interpreter(String filename)
             Material sphereSurface = new Material(currentSurface);
             Sphere sphere = new Sphere(radius, center, sphereSurface);
             renderList.add(sphere);
+            
+            //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
+        }
+        else if (token[0].equals("moving_sphere"))
+        {
+            float radius = float(token[1]);
+            PVector center1 = new PVector(float(token[2]), float(token[3]), float(token[4]));
+            PVector center2 = new PVector(float(token[5]), float(token[6]), float(token[7]));
+            
+            float[] result = new float[3];
+            float[] m = new float[3];
+            m[0] = center1.x; 
+            m[1] = center1.y; 
+            m[2] = center1.z;
+            matrix.mult(m,result);
+            
+            center1.x = result[0];
+            center1.y = result[1];
+            center1.z = result[2];
+            
+            result = new float[3];
+            m = new float[3];
+            m[0] = center2.x; 
+            m[1] = center2.y; 
+            m[2] = center2.z;
+            matrix.mult(m,result);
+            
+            center2.x = result[0];
+            center2.y = result[1];
+            center2.z = result[2];
+            
+            Material sphereSurface = new Material(currentSurface);
+            MovingSphere movingSphere = new MovingSphere(radius, center1, center2, sphereSurface);
+            renderList.add(movingSphere);
             
             //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
         }

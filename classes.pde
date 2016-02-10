@@ -147,6 +147,74 @@ class Sphere extends RenderObj
     }
 }
 
+class MovingSphere extends RenderObj {
+
+   PVector startPos;   //Start position of movement
+   PVector endPos;   //End position of movement
+   PVector speed;   //Rate of movement between startPos and endPos 
+   PVector center;
+   float radius; 
+  
+  /** Constructor */
+  MovingSphere(float radius, PVector center1, PVector center2, Material m) {
+    super(m);
+    this.radius = radius;
+    this.startPos = center1; 
+    this.endPos = center2;
+    this.speed = new PVector( endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z );
+    this.center = new PVector( (startPos.x + endPos.x)/2, (startPos.z + endPos.z)/2, (startPos.z + endPos.z)/2);
+  }
+  
+  RayCollInfo intersection(Ray r)
+  {
+
+      RayCollInfo rayCollInfo;
+
+      float dt = (float)( Math.random() );
+      center = new PVector(startPos.x + dt*speed.x, startPos.y + dt*speed.y, startPos.z + dt*speed.z);
+      PVector sphereVector = new PVector(r.origin.x - center.x, r.origin.y - center.y, r.origin.z - center.z);
+      float BSquare = pow(r.direction.dot(sphereVector), 2);
+      float A = r.direction.dot(r.direction);
+      float SVecSquare = sphereVector.dot(sphereVector);
+      float rSquare = pow(this.radius,2);
+      float AC = A * (SVecSquare - rSquare);
+      float D = BSquare - AC;
+      if(D >= 0)
+      {
+          float RootD = pow(D, .5);
+          float minusB = -r.direction.dot(sphereVector);
+          float num = min(minusB - RootD, minusB - RootD);
+          float root = num/A;
+          if(root > 0.0000001)
+          {
+              PVector reflectionVector = new PVector(-r.direction.x, -r.direction.y, -r.direction.z );
+              PVector hitPosition = new PVector(r.direction.x, r.direction.y, r.direction.z);
+              hitPosition.mult(root);
+              hitPosition.add(r.origin);
+              // Find the normal vector to the sphere at (x, y, z)
+              PVector normal = new PVector((hitPosition.x - center.x)/radius, (hitPosition.y - center.y)/radius, (hitPosition.z - center.z)/radius);
+              rayCollInfo = new RayCollInfo(reflectionVector, hitPosition, normal, true, root);
+              return rayCollInfo;
+          }
+          // No intersection happened
+          else
+          {
+              rayCollInfo = new RayCollInfo(false);
+              return rayCollInfo;
+          }
+      }
+      // no intersection happened
+      else
+      {
+          rayCollInfo = new RayCollInfo(false);
+          return rayCollInfo;
+      }
+  }
+
+
+  
+}
+
 class Triangle extends RenderObj
 {
     PVector vertex1;
