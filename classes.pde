@@ -14,6 +14,10 @@ class Light
 {
     PVector position;
     PVector colour;
+    int lightType;
+    Light(){
+      lightType = 1;
+    }
     public Light(PVector position,PVector colour)
     {
         this.position = position;
@@ -21,6 +25,25 @@ class Light
     }
 }
 
+class DiskLight extends Light 
+{
+    PVector normal;
+    float radius;
+    
+    DiskLight() {
+        lightType = 2;
+    }
+    public DiskLight(PVector normal, PVector diskColor, PVector center, float radius){
+        this.normal = normal;
+        this.colour = diskColor;
+        this.radius = radius;
+        this.position = center;
+    }
+  
+
+  
+}
+  
 
 class Material
 {
@@ -162,7 +185,9 @@ class MovingSphere extends RenderObj {
     this.startPos = center1; 
     this.endPos = center2;
     this.speed = new PVector( endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z );
-    this.center = new PVector( (startPos.x + endPos.x)/2, (startPos.z + endPos.z)/2, (startPos.z + endPos.z)/2);
+    this.center = new PVector( 0.5*(startPos.x + endPos.x), 0.5*(startPos.y + endPos.y), 0.5*(startPos.z + endPos.z));
+    
+    println(this.center);
   }
   
   RayCollInfo intersection(Ray r)
@@ -172,6 +197,8 @@ class MovingSphere extends RenderObj {
 
       float dt = (float)( Math.random() );
       center = new PVector(startPos.x + dt*speed.x, startPos.y + dt*speed.y, startPos.z + dt*speed.z);
+      println(this.center);
+      
       PVector sphereVector = new PVector(r.origin.x - center.x, r.origin.y - center.y, r.origin.z - center.z);
       float BSquare = pow(r.direction.dot(sphereVector), 2);
       float A = r.direction.dot(r.direction);

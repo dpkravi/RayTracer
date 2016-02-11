@@ -16,8 +16,7 @@ int firstIntersection(ArrayList<RenderObj> renderList, Ray currentRay)
             collList.add(i);
         }
     }
-    //if(collList.size() == 0)
-    //  println("worstu");
+    
     if(collList.size() > 0)
     {
         RenderObj closestObject = renderList.get(collList.get(0));

@@ -194,6 +194,18 @@ void interpreter(String filename)
             
             //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
         }
+            /** Disk light */
+        else if( token[0].equals("disk_light") ) {
+            PVector center = new PVector(float(token[1]), float(token[2]), float(token[3]));
+            float radius = float( token[4] ); 
+            PVector normal = new PVector(float(token[5]), float(token[6]), float(token[7]));
+            PVector diskColor = new PVector(float(token[8]), float(token[9]), float(token[10]));
+           
+              
+            DiskLight diskLight = new DiskLight(normal, diskColor, center, radius);
+              
+            lights.add(diskLight);
+        }
         else if (token[0].equals("read"))
         {
             // reads input from another file
