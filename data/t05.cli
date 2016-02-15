@@ -10,7 +10,7 @@ background 0.2 0.2 1
 
 # light sources 
 
-disk_light  2 5 -4  0.9  1 0 0  .8 .8 .8
+
 point_light -3 4 0  .2 .2 .2
 
 # these two triangles acts as a ground plane

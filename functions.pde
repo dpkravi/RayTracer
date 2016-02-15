@@ -72,7 +72,7 @@ Ray getDiskLightShadowRay(Light light, PVector hitVec){
 
 
 boolean isInShadow(Ray shadowRay){
-    for( int i = 0; i < renderList.size(); ++i ) {
+    for( int i = 0; i < renderList.size(); i++ ) {
        if( intersect(shadowRay, i ) == true ) { return true; }
     }
     return false;
@@ -101,7 +101,7 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
         if(currentLight.lightType == 1){
             shadowRay = getPointLightShadowRay(lights.get(i), rayCollInfo.hitVec);
         }
-        else{
+        if(currentLight.lightType == 2){
             shadowRay = getDiskLightShadowRay(lights.get(i), rayCollInfo.hitVec);
         } 
 
@@ -147,6 +147,7 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
         //   finalColor.z = finalColor.z + diffuseShading.z;
         //}
     }
+
     return finalColor;
 }
 
