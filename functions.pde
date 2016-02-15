@@ -16,7 +16,8 @@ int firstIntersection(ArrayList<RenderObj> renderList, Ray currentRay)
             collList.add(i);
         }
     }
-    
+    //if(collList.size() == 0)
+    //  println("worstu");
     if(collList.size() > 0)
     {
         RenderObj closestObject = renderList.get(collList.get(0));
@@ -42,6 +43,33 @@ int firstIntersection(ArrayList<RenderObj> renderList, Ray currentRay)
     }
 }
 
+Ray getPointLightShadowRay(Light light, PVector hitVec){
+  
+    PVector normal = createVec(hitVec, light.position).normalize();
+    PVector pos = new PVector(hitVec.x+0.02*normal.x,hitVec.y+0.02*normal.y,hitVec.z+0.02*normal.z);
+    Ray R = new Ray(pos, normal);
+    return R;
+}
+
+
+boolean isInShadow(Ray shadowRay){
+    for( int i = 0; i < renderList.size(); ++i ) {
+       if( intersect(shadowRay, i ) == true ) { return true; }
+    }
+    return false;
+}
+
+boolean intersect( Ray shadowRay, int i ) {
+    RayCollInfo shadowIntersection = renderList.get(i).intersection(shadowRay);
+    if(shadowIntersection.isHit && shadowIntersection.rootVal <= lparam)
+    {
+        return true;
+    }
+    else{
+        return false;
+    }
+ }
+
 PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, RenderObj currentObj, RayCollInfo rayCollInfo)
 {
    
@@ -49,24 +77,11 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
     PVector finalColor = new PVector(currentObj.material.ambientCoeff.x, currentObj.material.ambientCoeff.y, currentObj.material.ambientCoeff.z);
     for(int i = 0; i < lights.size(); i++)
     {
-        shadows = false;
         Light currentLight = lights.get(i);
+        Ray shadowRay = getPointLightShadowRay(lights.get(i), rayCollInfo.hitVec);
         PVector lightVec = new PVector(currentLight.position.x - rayCollInfo.hitVec.x, currentLight.position.y - rayCollInfo.hitVec.y, currentLight.position.z - rayCollInfo.hitVec.z);
-        for( int j = 0; j< renderList.size(); j++){
-            PVector shadowDirection = lightVec;
-            PVector shadowSource = new PVector(rayCollInfo.hitVec.x + shadowDirection.x*0.0001, rayCollInfo.hitVec.y + shadowDirection.y*0.0001, rayCollInfo.hitVec.z + shadowDirection.z*0.0001);
-            float lParam = lightVec.mag();
-            Ray shadowRay = new Ray(shadowSource, shadowDirection);
-            RayCollInfo shadowIntersection = renderList.get(j).intersection(shadowRay);
-            if(shadowIntersection.isHit && shadowIntersection.rootVal <= lParam)
-            {
-                shadows = true;
-                j = renderList.size();
-              
-            }
-        }
-        if(shadows == false){
-            //Diffuse color
+        lparam = lightVec.mag();
+        if(isInShadow(shadowRay) == false){
             lightVec.normalize();
             rayCollInfo.normal.normalize();
             // (N.L)
@@ -75,7 +90,36 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
             finalColor.x = finalColor.x + diffuseShading.x;
             finalColor.y = finalColor.y + diffuseShading.y;
             finalColor.z = finalColor.z + diffuseShading.z;
+        
         }
+      
+        //shadows = false;
+        //Light currentLight = lights.get(i);
+        //PVector lightVec = new PVector(currentLight.position.x - rayCollInfo.hitVec.x, currentLight.position.y - rayCollInfo.hitVec.y, currentLight.position.z - rayCollInfo.hitVec.z);
+        //for( int j = 0; j< renderList.size(); j++){
+        //   PVector shadowDirection = lightVec;
+        //   PVector shadowSource = new PVector(rayCollInfo.hitVec.x + shadowDirection.x*0.0001, rayCollInfo.hitVec.y + shadowDirection.y*0.0001, rayCollInfo.hitVec.z + shadowDirection.z*0.0001);
+        //   float lParam = lightVec.mag();
+        //   Ray shadowRay = new Ray(shadowSource, shadowDirection);
+        //   RayCollInfo shadowIntersection = renderList.get(j).intersection(shadowRay);
+        //   if(shadowIntersection.isHit && shadowIntersection.rootVal <= lParam)
+        //   {
+        //       shadows = true;
+        //       j = renderList.size();
+              
+        //   }
+        //}
+        //if(shadows == false){
+        //   //Diffuse color
+        //   lightVec.normalize();
+        //   rayCollInfo.normal.normalize();
+        //   // (N.L)
+        //   float NL = max(rayCollInfo.normal.dot(lightVec), 0);
+        //   PVector diffuseShading = new PVector( currentObj.material.diffuseCoeff.x*currentLight.colour.x*NL, currentObj.material.diffuseCoeff.y*currentLight.colour.y*NL, currentObj.material.diffuseCoeff.z*currentLight.colour.z*NL);
+        //   finalColor.x = finalColor.x + diffuseShading.x;
+        //   finalColor.y = finalColor.y + diffuseShading.y;
+        //   finalColor.z = finalColor.z + diffuseShading.z;
+        //}
     }
     return finalColor;
 }
