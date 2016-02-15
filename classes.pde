@@ -14,10 +14,25 @@ class Light
 {
     PVector position;
     PVector colour;
-    public Light(PVector position,PVector colour)
+    float radius;
+    int lightType;
+    public Light(PVector position,PVector colour, int lightType, float radius)
     {
         this.position = position;
         this.colour = colour;
+        this.lightType = lightType;
+        this.radius = radius;
+    }
+}
+
+class DiskLight extends Light
+{
+    PVector normal;
+    float radius;
+    DiskLight(PVector normal, float radius,PVector position,PVector colour, int lightType){
+      super(position,colour,lightType, radius);
+      this.normal = normal;
+      this.radius = radius;
     }
 }
 

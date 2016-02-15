@@ -4,6 +4,8 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
+public float mMinDist; int mMinInd; PVector mMinPoint; PVector mMinNormal;
+
 boolean test1 = true; 
 float lparam = 0;
 boolean isPush = false;
@@ -129,8 +131,19 @@ void interpreter(String filename)
         {
             PVector lightPosition = new PVector(float(token[1]), float(token[2]), float(token[3]));
             PVector lightColor = new PVector(float(token[4]), float(token[5]), float(token[6]));
-            Light point_light = new Light(lightPosition, lightColor);
+            Light point_light = new Light(lightPosition, lightColor, 1, 0.0);
             lights.add(point_light);
+        }
+        else if( token[0].equals("disk_light") ) {
+            PVector center = new PVector(float(token[1]), float(token[2]), float(token[3]));
+            float radius = float( token[4] ); 
+            PVector normal = new PVector(float(token[5]), float(token[6]), float(token[7]));
+            PVector diskColor = new PVector(float(token[8]), float(token[9]), float(token[10]));
+           
+              
+            DiskLight diskLight = new DiskLight(normal, radius, center, diskColor, 2);
+              
+            lights.add(diskLight);
         }
         else if (token[0].equals("diffuse"))
         {

@@ -51,6 +51,25 @@ Ray getPointLightShadowRay(Light light, PVector hitVec){
     return R;
 }
 
+Ray getDiskLightShadowRay(Light light, PVector hitVec){
+  
+     // Hack to verify that it works. We know that normal is always towards X (I am being lazy here, but the
+     // only hack so far is to do the randomization simpler in plane YZ - UPDATE THIS!)
+     PVector P = new PVector(0,0,0);
+     float dr = sqrt((float)Math.random());
+     float dt = 2*3.14157*(float)Math.random();
+     P.x = light.position.x;
+     P.y = light.position.y + light.radius*dr*cos(dt);
+     P.z = light.position.z + light.radius*dr*sin(dt);     
+     
+     PVector normal = createVec(hitVec, P).normalize();
+
+     PVector pos = new PVector(hitVec.x+0.02*normal.x,hitVec.y+0.02*normal.y,hitVec.z+0.02*normal.z);
+     Ray R = new Ray(pos, normal);
+     
+     return R;
+}
+
 
 boolean isInShadow(Ray shadowRay){
     for( int i = 0; i < renderList.size(); ++i ) {
@@ -78,14 +97,21 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
     for(int i = 0; i < lights.size(); i++)
     {
         Light currentLight = lights.get(i);
-        Ray shadowRay = getPointLightShadowRay(lights.get(i), rayCollInfo.hitVec);
+        Ray shadowRay = new Ray();
+        if(currentLight.lightType == 1){
+            shadowRay = getPointLightShadowRay(lights.get(i), rayCollInfo.hitVec);
+        }
+        else{
+            shadowRay = getDiskLightShadowRay(lights.get(i), rayCollInfo.hitVec);
+        } 
+
         PVector lightVec = new PVector(currentLight.position.x - rayCollInfo.hitVec.x, currentLight.position.y - rayCollInfo.hitVec.y, currentLight.position.z - rayCollInfo.hitVec.z);
         lparam = lightVec.mag();
         if(isInShadow(shadowRay) == false){
             lightVec.normalize();
             rayCollInfo.normal.normalize();
             // (N.L)
-            float NL = max(rayCollInfo.normal.dot(lightVec), 0);
+            float NL = abs(max(rayCollInfo.normal.dot(lightVec), 0));
             PVector diffuseShading = new PVector( currentObj.material.diffuseCoeff.x*currentLight.colour.x*NL, currentObj.material.diffuseCoeff.y*currentLight.colour.y*NL, currentObj.material.diffuseCoeff.z*currentLight.colour.z*NL);
             finalColor.x = finalColor.x + diffuseShading.x;
             finalColor.y = finalColor.y + diffuseShading.y;
