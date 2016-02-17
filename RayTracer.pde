@@ -4,8 +4,11 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-public float mMinDist; int mMinInd; PVector mMinPoint; PVector mMinNormal;
+int testCounter = 0;
+int testCounter1 = 0;
 
+float lensRadius, focalDistance;
+boolean setLens = false;
 boolean test1 = true; 
 float lparam = 0;
 boolean isPush = false;
@@ -67,6 +70,7 @@ void setup()
 void keyPressed()
 {
     test1 = true;
+    setLens = false;
     raysPerPixel = 1;
     matrix.reset();
     switch(key)
@@ -85,10 +89,10 @@ void keyPressed()
         break;
         case '7':  interpreter("t07.cli");
         break;
-        //case '8':  interpreter("t08.cli");
-        //break;
-        //case '9':  interpreter("t09.cli");
-        //break;
+        case '8':  interpreter("t08.cli");
+        break;
+        case '9':  interpreter("t09.cli");
+        break;
         case '0':  interpreter("test.cli");
         break;
         case 'q':  exit();
@@ -206,6 +210,11 @@ void interpreter(String filename)
             renderList.add(movingSphere);
             
             //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
+        }
+        else if( token[0].equals("lens") ) {
+          lensRadius = float(token[1]);
+          focalDistance = float( token[2] );
+          setLens = true;
         }
         else if (token[0].equals("read"))
         {
@@ -332,6 +341,8 @@ void interpreter(String filename)
             lights.clear();
             //Reset background to black after each render
             backgroundColor = new PVector(0,0,0);
+            println("Test Counter : "+testCounter);
+            println("Test Counter : "+testCounter1);
         }
     }
 }

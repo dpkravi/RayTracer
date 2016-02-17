@@ -46,7 +46,7 @@ int firstIntersection(ArrayList<RenderObj> renderList, Ray currentRay)
 Ray getPointLightShadowRay(Light light, PVector hitVec){
   
     PVector normal = createVec(hitVec, light.position).normalize();
-    PVector pos = new PVector(hitVec.x+0.02*normal.x,hitVec.y+0.02*normal.y,hitVec.z+0.02*normal.z);
+    PVector pos = new PVector(hitVec.x+0.0002*normal.x,hitVec.y+0.0002*normal.y,hitVec.z+0.0002*normal.z);
     Ray R = new Ray(pos, normal);
     return R;
 }
@@ -64,10 +64,11 @@ Ray getDiskLightShadowRay(Light light, PVector hitVec){
      
      PVector normal = createVec(hitVec, P).normalize();
 
-     PVector pos = new PVector(hitVec.x+0.02*normal.x,hitVec.y+0.02*normal.y,hitVec.z+0.02*normal.z);
+     PVector pos = new PVector(hitVec.x+0.0002*normal.x,hitVec.y+0.0002*normal.y,hitVec.z+0.0002*normal.z);
      Ray R = new Ray(pos, normal);
-     
+     testCounter++;
      return R;
+
 }
 
 
@@ -108,10 +109,11 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
         PVector lightVec = new PVector(currentLight.position.x - rayCollInfo.hitVec.x, currentLight.position.y - rayCollInfo.hitVec.y, currentLight.position.z - rayCollInfo.hitVec.z);
         lparam = lightVec.mag();
         if(isInShadow(shadowRay) == false){
+            testCounter1++;
             lightVec.normalize();
             rayCollInfo.normal.normalize();
             // (N.L)
-            float NL = abs(max(rayCollInfo.normal.dot(lightVec), 0));
+            float NL = abs(max(rayCollInfo.normal.dot(shadowRay.direction), 0));
             PVector diffuseShading = new PVector( currentObj.material.diffuseCoeff.x*currentLight.colour.x*NL, currentObj.material.diffuseCoeff.y*currentLight.colour.y*NL, currentObj.material.diffuseCoeff.z*currentLight.colour.z*NL);
             finalColor.x = finalColor.x + diffuseShading.x;
             finalColor.y = finalColor.y + diffuseShading.y;
@@ -180,6 +182,32 @@ Ray getRayAtPixel(int u, int v, boolean isCenter){
 PVector computeColor(ArrayList<RenderObj> renderList, Ray currentRay){
     if(renderList.size() > 0)
     {  
+      //If the depth of field is enabled
+      if(setLens){
+      
+          //Our default lens / eye location is at origin
+          PVector eyeLoc = new PVector(0,0,0);
+          //Find intersection of the ray with the focal plane
+          float inter = (-focalDistance - currentRay.origin.z)/(currentRay.direction.z);
+          PVector FocalPoint = new PVector(currentRay.origin.x+inter*currentRay.direction.x,currentRay.origin.y+inter*currentRay.direction.y,currentRay.origin.z+inter*currentRay.direction.z);
+          
+          //Get a random point around they eye(lens)
+          PVector eye = new PVector(0,0,0);
+          float dr = sqrt((float)Math.random());
+          float dt = 2*3.14157*(float)Math.random();
+          eye.x = eyeLoc.x + lensRadius*dr*cos(dt);
+          eye.y = eyeLoc.y + lensRadius*dr*sin(dt);
+          eye.z = eyeLoc.z;
+          
+          //get ray between random lens point and focal point
+          PVector lf = createVec(eye,FocalPoint);
+          
+          currentRay = new Ray(eye, lf); 
+
+      }
+      else{
+          //Do nothing. DOn't change currentRay
+      }
       int closestObj = firstIntersection(renderList, currentRay);
       //No intersection happened
       if(closestObj == -1 )
