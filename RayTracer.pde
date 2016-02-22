@@ -5,7 +5,14 @@
 ///////////////////////////////////////////////////////////////////////
 
 int testCounter = 0;
-int testCounter1 = 0;
+
+int closestObject = -1;
+float mMinDist = 1000; 
+int mMinInd = -1; 
+PVector mMinNormal = new PVector(0,0,0);
+PVector mMinPoint;
+
+int u=0,v=0;   
 
 float lensRadius, focalDistance;
 boolean setLens = false;
@@ -38,7 +45,7 @@ float camLeft;
 float camRight;
 boolean shadows;
 int raysPerPixel;
-
+PrintWriter output;
 
  MatrixStack matrixStack;
  PMatrix3D matrix;
@@ -65,6 +72,8 @@ void setup()
     //resetMatrix();
     // you may want to reset the matrix here
     interpreter("rect_test.cli");
+    output = createWriter("positions.txt"); 
+    
 }
 // Press key 1 to 9 and 0 to run different test cases.
 void keyPressed()
@@ -294,8 +303,8 @@ void interpreter(String filename)
           ////////////////////////////////////////
           boolean test = true;
           Ray currentRay = new Ray();
-           for(int u = 0; u < height; u++){
-             for(int v = 0; v < width; v++){
+           for(u = 0; u < height; u++){
+             for(v = 0; v < width; v++){
                int correctU = 299 - u;
                colorArray[correctU][v] = new PVector(0,0,0);
                if(raysPerPixel == 1){
@@ -319,9 +328,11 @@ void interpreter(String filename)
                  colorArray[correctU][v].y = (float) colorArray[correctU][v].y / (float) raysPerPixel;
                  colorArray[correctU][v].z = (float) colorArray[correctU][v].z / (float) raysPerPixel;
                }
-        
+               //print( colorArray[correctU][v]);
              } 
+
            } 
+
             loadPixels();
             if(!filename.equals("rect_test.cli"))
             {
@@ -341,8 +352,7 @@ void interpreter(String filename)
             lights.clear();
             //Reset background to black after each render
             backgroundColor = new PVector(0,0,0);
-            println("Test Counter : "+testCounter);
-            println("Test Counter : "+testCounter1);
+
         }
     }
 }

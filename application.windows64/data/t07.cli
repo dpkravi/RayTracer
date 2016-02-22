@@ -1,0 +1,40 @@
+# testing depth-of-field, one ray per pixel
+
+rays_per_pixel 1
+
+lens  0.08  3
+
+fov 60
+
+# blue background
+
+background 0.2 0.2 1
+
+# light sources 
+
+point_light  2 5 0  .8 .8 .8
+point_light -3 4 0  .2 .2 .2
+
+# spheres resting on ground
+
+diffuse  .8 .8 .8  .2 .2 .2
+
+
+# these two triangles acts as a ground plane
+
+diffuse  .8 .8 .8  .2 .2 .2
+
+begin
+vertex -100 -2 -100
+vertex  100 -2 -100
+vertex  100 -2  100
+end
+
+begin
+vertex  100 -2  100
+vertex -100 -2  100
+vertex -100 -2 -100
+end
+
+write t07.png
+
