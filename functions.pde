@@ -1,47 +1,24 @@
-int firstIntersection(ArrayList<RenderObj> renderList, Ray currentRay)
-{
-    //Create a list of all the ray object intersections for this particular ray
-    ArrayList<Integer> collList = new ArrayList<Integer>();
+   //Looping through all objects and storing the values for the closest intersection
+   boolean intersect( Ray R, int i ) {
 
-    //if(test1){
-    //  println(renderList.size());
-    //  test1 = false;
-    //}
-    for(int i = 0; i < renderList.size(); i++)
-    {
-        RenderObj newRenderable = renderList.get(i);
-        RayCollInfo newRayCollInfo = newRenderable.intersection(currentRay);
-        if(newRayCollInfo.isHit)
-        {
-            collList.add(i);
-        }
+    RayCollInfo rec;     
+    rec = renderList.get(i).intersection(R);
+    if( rec.isHit == true ) {
+             
+          if( rec.rootVal < smallestDist ) { 
+             smallestDist = rec.rootVal; 
+             closestIndex = i; 
+             closestHit = rec.hitVec; 
+             closestNormal = rec.normal;
+           } 
+           return true;
     }
-
-    if(collList.size() > 0)
-    {
-        RenderObj closestObject = renderList.get(collList.get(0));
-        RayCollInfo rayCollInfo = closestObject.intersection(currentRay);
-        int retIndex = collList.get(0);
-        //Compare the root values and the lowest value gives the first intersection
-        for(int k = 1; k < collList.size(); k++)
-        {
-            RenderObj newRenderObj =  renderList.get(collList.get(k));
-            RayCollInfo newRayCollInfo = newRenderObj.intersection(currentRay);
-            if(newRayCollInfo.rootVal < rayCollInfo.rootVal)
-            {
-                closestObject = newRenderObj;
-                rayCollInfo = newRayCollInfo;
-                retIndex = collList.get(k);
-            }
-        }
-        return retIndex;
-    }
-    else
-    {
-        return -1;
-    }
-}
-
+        
+    return false;
+     
+   }
+   
+   
 Ray getPointLightShadowRay(Light light, PVector hitVec){
   
     PVector normal = createVec(hitVec, light.position).normalize();
@@ -52,8 +29,7 @@ Ray getPointLightShadowRay(Light light, PVector hitVec){
 
 Ray getDiskLightShadowRay(Light light, PVector hitVec){
   
-     // Hack to verify that it works. We know that normal is always towards X (I am being lazy here, but the
-     // only hack so far is to do the randomization simpler in plane YZ - UPDATE THIS!)
+    // This works only when the normal is (1,0,0)
      PVector P = new PVector(0,0,0);
      float dr = sqrt((float)Math.random());
      float dt = 2*3.14157*(float)Math.random();
@@ -65,33 +41,35 @@ Ray getDiskLightShadowRay(Light light, PVector hitVec){
 
      PVector pos = new PVector(hitVec.x+0.0002*normal.x,hitVec.y+0.0002*normal.y,hitVec.z+0.0002*normal.z);
      Ray R = new Ray(pos, normal);
-     testCounter++;
      return R;
 
 }
 
         
 boolean isInShadow(Ray shadowRay){
-    for( int i = 0; i < renderList.size(); i++ ) {
-       if( isIntersect(shadowRay, i ) == true ) { return true; }
+    for(int i = 0; i < renderList.size(); i++) {
+       if(isIntersect(shadowRay, i))
+       {
+           return true; 
+       }
     }
     return false;
 }
 
 boolean isIntersect( Ray shadowRay, int i ) {
     RayCollInfo shadowIntersection = renderList.get(i).intersection(shadowRay);
-    if(shadowIntersection.isHit && shadowIntersection.rootVal <= lparam)
+    if(shadowIntersection.isHit && shadowIntersection.rootVal <= lightValue)
     {
         return true;
     }
-    else{
+    else
+    {
         return false;
     }
  }
 
 PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, RenderObj currentObj, RayCollInfo rayCollInfo)
 {
-   
     //Ambient color
     PVector finalColor = new PVector(currentObj.material.ambientCoeff.x, currentObj.material.ambientCoeff.y, currentObj.material.ambientCoeff.z);
     for(int i = 0; i < lights.size(); i++)
@@ -100,51 +78,25 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
         Ray shadowRay = new Ray();
         if(currentLight.lightType == 1){
             shadowRay = getPointLightShadowRay(lights.get(i), rayCollInfo.hitVec);
-
-   //         output.println(shadowRay.origin+" "+shadowRay.direction);
         }
         if(currentLight.lightType == 2){
             shadowRay = getDiskLightShadowRay(lights.get(i), rayCollInfo.hitVec);
         } 
-/*
 
-        PVector lightVec = new PVector(currentLight.position.x - rayCollInfo.hitVec.x, currentLight.position.y - rayCollInfo.hitVec.y, currentLight.position.z - rayCollInfo.hitVec.z);
-        lparam = lightVec.mag();
-        if(isInShadow(shadowRay) == false){
-            lightVec.normalize();
-            rayCollInfo.normal.normalize();
-            // (N.L)
-            float NL = abs(max(rayCollInfo.normal.dot(shadowRay.direction), 0));
-            PVector diffuseShading = new PVector( currentObj.material.diffuseCoeff.x*currentLight.colour.x*NL, currentObj.material.diffuseCoeff.y*currentLight.colour.y*NL, currentObj.material.diffuseCoeff.z*currentLight.colour.z*NL);
-            finalColor.x = finalColor.x + diffuseShading.x;
-            finalColor.y = finalColor.y + diffuseShading.y;
-            finalColor.z = finalColor.z + diffuseShading.z;
-            //if(finalColor.x == 0.2 && finalColor.y == 0.2 && finalColor.z == 0.2)
-            // println("test");
-        }
-
-        if(isInShadow(shadowRay)){
-          counter++;
-            println(counter); 
-        }
-        
- */       
-        
         shadows = false;
-//        Light currentLight = lights.get(i);
         PVector lightVec = new PVector(currentLight.position.x - rayCollInfo.hitVec.x, currentLight.position.y - rayCollInfo.hitVec.y, currentLight.position.z - rayCollInfo.hitVec.z);
         for( int j = 0; j< renderList.size(); j++){
-          //PVector shadowDirection = lightVec;
-          //PVector shadowSource = new PVector(rayCollInfo.hitVec.x + shadowDirection.x*0.0001, rayCollInfo.hitVec.y + shadowDirection.y*0.0001, rayCollInfo.hitVec.z + shadowDirection.z*0.0001);
-          float lParam = lightVec.mag();
+          
+          float lightValue = lightVec.mag();
 
           RayCollInfo shadowIntersection = renderList.get(j).intersection(shadowRay);
-          if(shadowIntersection.isHit && shadowIntersection.rootVal <= lParam)
+          shadowIntersection.objIndex = j;
+          
+          //Had a problem with shadows being generated by the same object so ignoring the objects that are same as shadow ray origin
+          if(shadowIntersection.isHit && (shadowIntersection.rootVal <= lightValue) && (shadowIntersection.objIndex != rayCollInfo.objIndex))
           {
-              output.println(rayCollInfo.hitVec);
-              shadows = true;
-              j = renderList.size();
-              
+               shadows = true;
+               j = renderList.size();
           }
         }
         if(shadows == false){
@@ -152,7 +104,7 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
           lightVec.normalize();
           rayCollInfo.normal.normalize();
           // (N.L)
-          float NL = max(rayCollInfo.normal.dot(lightVec), 0);
+          float NL = max(rayCollInfo.normal.dot(shadowRay.direction), 0);
           PVector diffuseShading = new PVector( currentObj.material.diffuseCoeff.x*currentLight.colour.x*NL, currentObj.material.diffuseCoeff.y*currentLight.colour.y*NL, currentObj.material.diffuseCoeff.z*currentLight.colour.z*NL);
           finalColor.x = finalColor.x + diffuseShading.x;
           finalColor.y = finalColor.y + diffuseShading.y;
@@ -221,14 +173,9 @@ PVector computeColor(ArrayList<RenderObj> renderList, Ray currentRay){
       else{
         newRay = currentRay;
       }
- //     int closestObj = firstIntersection(renderList, newRay);
- //     print(closestObj);
-      //No intersection happened
-      
-      ////////////////////Trying new code here////////////////
+
       RenderObj currentRenderObj = null;
       RayCollInfo rayCollInfo = firstIntersection(newRay);
-      //print(rayCollInfo.objIndex);
       if(rayCollInfo.objIndex!=-1){
          currentRenderObj = renderList.get(rayCollInfo.objIndex);
       }
@@ -246,49 +193,26 @@ PVector computeColor(ArrayList<RenderObj> renderList, Ray currentRay){
 
 
 
-  RayCollInfo firstIntersection(Ray _R ) {
+  RayCollInfo firstIntersection(Ray R ) {
      
-     RayCollInfo object_point = new RayCollInfo(false);
-     
-     object_point.objIndex = -1; // PROBABLY NOT NEEDED BUT JUST TO DEBUG  
+     RayCollInfo rayCollInfo = new RayCollInfo(false);
 
-    // Init minDist
-     mMinDist = 1000; 
-     mMinInd = -1; 
-     mMinNormal = new PVector(0,0,0);
+     rayCollInfo.objIndex = -1; 
+     smallestDist = 1000; 
+     closestIndex = -1; 
+     closestNormal = new PVector(0,0,0);
 
-    // Go through all primitives AFTER setting default minDist and minInd
      for( int i = 0; i < renderList.size(); i++ ) {
-       intersect( _R, i );
+       intersect( R, i );
      }
      
-     if( mMinInd != -1 ) { 
-       object_point.objIndex = mMinInd; 
-       object_point.hitVec = mMinPoint; 
-       object_point.normal = mMinNormal.normalize();
-       object_point.isHit = true;
+     if( closestIndex != -1 ) { 
+       rayCollInfo.objIndex = closestIndex; 
+       rayCollInfo.hitVec = closestHit; 
+       rayCollInfo.normal = closestNormal.normalize();
+       rayCollInfo.isHit = true;
      }
        
-     return object_point;
-   }
-   
-   
-   boolean intersect( Ray _R, int i ) {
-
-    RayCollInfo rec;     
-    rec = renderList.get(i).intersection(_R);
-    if( rec.isHit == true ) {
-             
-          if( rec.rootVal < mMinDist ) { 
-             mMinDist = rec.rootVal; 
-             mMinInd = i; 
-             mMinPoint = rec.hitVec; 
-             mMinNormal = rec.normal;
-           } // We normalize when assigning to mMinNormal
-           return true;
-    }
-        
-    return false;
-     
+     return rayCollInfo;
    }
    

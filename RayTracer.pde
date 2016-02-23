@@ -4,20 +4,15 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-int testCounter = 0;
 
-int closestObject = -1;
-float mMinDist = 1000; 
-int mMinInd = -1; 
-PVector mMinNormal = new PVector(0,0,0);
-PVector mMinPoint;
+
 
 int u=0,v=0;   
 
 float lensRadius, focalDistance;
 boolean setLens = false;
 boolean test1 = true; 
-float lparam = 0;
+float lightValue = 0;
 boolean isPush = false;
 // boolean isPop = false;
     
@@ -45,7 +40,11 @@ float camLeft;
 float camRight;
 boolean shadows;
 int raysPerPixel;
-PrintWriter output;
+
+float smallestDist = 1000; 
+int closestIndex = -1; 
+PVector closestNormal = new PVector(0,0,0);
+PVector closestHit;
 
  MatrixStack matrixStack;
  PMatrix3D matrix;
@@ -72,7 +71,6 @@ void setup()
     //resetMatrix();
     // you may want to reset the matrix here
     interpreter("rect_test.cli");
-    output = createWriter("positions.txt"); 
     
 }
 // Press key 1 to 9 and 0 to run different test cases.
@@ -183,8 +181,7 @@ void interpreter(String filename)
             Material sphereSurface = new Material(currentSurface);
             Sphere sphere = new Sphere(radius, center, sphereSurface);
             renderList.add(sphere);
-            
-            //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
+           
         }
         else if (token[0].equals("moving_sphere"))
         {
@@ -218,7 +215,6 @@ void interpreter(String filename)
             MovingSphere movingSphere = new MovingSphere(radius, center1, center2, sphereSurface);
             renderList.add(movingSphere);
             
-            //println(float(token[2]) +" "+ float(token[3]) +" "+ float(token[4]));
         }
         else if( token[0].equals("lens") ) {
           lensRadius = float(token[1]);
@@ -231,7 +227,7 @@ void interpreter(String filename)
             interpreter (token[1]);
         }
         else if (token[0].equals("begin")){
-          //Ignore
+             //Ignore
         }
         else if (token[0].equals("vertex")){
             float[] result = new float[3];
@@ -255,7 +251,7 @@ void interpreter(String filename)
               }
         }
         else if (token[0].equals("end")){
-          //Ignore
+            //Ignore
         }
         else if (token[0].equals("push")){
           matrixStack.push(matrix);
@@ -328,7 +324,6 @@ void interpreter(String filename)
                  colorArray[correctU][v].y = (float) colorArray[correctU][v].y / (float) raysPerPixel;
                  colorArray[correctU][v].z = (float) colorArray[correctU][v].z / (float) raysPerPixel;
                }
-               //print( colorArray[correctU][v]);
              } 
 
            } 

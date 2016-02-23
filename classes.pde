@@ -1,5 +1,4 @@
 //This will be the base class from which shapes will be extended
-//Currently only spheres are used. 
 abstract class RenderObj
 {
     Material material;
@@ -89,13 +88,13 @@ class RayCollInfo
     public RayCollInfo(boolean isHit, boolean isTriangle)
     {
         this.isHit = isHit;
+        this.isTriangle = isTriangle;
     }
     public RayCollInfo(boolean isHit)
     {
         this.isHit = isHit;
     }
 }
-
 
 class Sphere extends RenderObj
 {
