@@ -7,4 +7,7 @@ Features:
 - Point lights and diffuse surfaces supported
 - Hard shadows casted
 - Basic Translate, Rotate and Scale transformations
-
+- Anti-aliasing
+- Motion Blur
+- Disk light with soft shadows
+- Depth-of-Field with a lens
