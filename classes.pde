@@ -2,6 +2,18 @@
 abstract class RenderObj
 {
     Material material;
+    int primitiveType;
+    
+    Box boundingBox;
+    
+    RenderObj() {
+      primitiveType = sDefaultType;
+    }
+    
+    RenderObj(int primitiveType){
+      this.primitiveType = primitiveType;
+    }
+    
     RenderObj(Material m)
     {
         material = m;

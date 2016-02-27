@@ -5,10 +5,19 @@
 ///////////////////////////////////////////////////////////////////////
 
 
+int defaultType = 0;
+int triangleType = 1;
+int sphereType = 2;
+int instanceType = 3;
+int boxType = 4;
+int listType = 5;
+int bvhType = 6;
+
+int timer;
+
 
 
 int u=0,v=0;   
-
 float lensRadius, focalDistance;
 boolean setLens = false;
 boolean test1 = true; 
@@ -291,6 +300,26 @@ void interpreter(String filename)
             float y1 = float(token[4]);
             rect(x0, screen_height-y1, x1-x0, y1-y0);
         }
+        
+        else if ( token[0].equals("box")) {
+            float xmin, xmax, ymin,ymax,zmin,zmax;
+            xmin = Float.parseFloat( token[1] );
+            ymin = Float.parseFloat( token[2] );
+            zmin = Float.parseFloat( token[3] );
+            xmax = Float.parseFloat( token[4] );
+            ymax = Float.parseFloat( token[5] );
+            zmax = Float.parseFloat( token[6] );      
+            
+            Box box = new Box();
+            box.set( xmin, ymin, zmin, xmax, ymax, zmax );
+            box.setDiffuseCoeff( cdr, cdg, cdb );
+            box.setAmbienceCoeff( car, cag, cab );
+            
+            gEnv.addPrimitive( box );
+    
+        }
+    
+    
         else if (token[0].equals("write"))
         {
           println("Renderlist size : "+ renderList.size());
