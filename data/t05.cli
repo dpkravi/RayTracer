@@ -1,39 +1,44 @@
-# testing soft shadows, one sample per pixel
-
-rays_per_pixel 1
+# four overlapping boxes of different colors
 
 fov 60
+point_light 0 0 0 1 1 1
+background 0.6 0.6 0.9
 
-# blue background
+push
 
-background 0.2 0.2 1
+translate 0 0 -5
+rotate 20 1 0 0
+rotate -20 0 1 0
 
-# light sources 
+diffuse 0.8 0.8 0.8  0.2 0.2 0.2
+push
+read box.cli
+pop
 
-disk_light  2 5 -4  0.9  1 0 0  .8 .8 .8
-point_light -3 4 0  .2 .2 .2
+diffuse 0.8 0.2 0.2  0.2 0.2 0.2
+push
+scale 0.99 0.99 0.99
+rotate 45 0 0 1
+read box.cli
+pop
 
-# these two triangles acts as a ground plane
+diffuse 0.2 0.8 0.2  0.2 0.2 0.2
+push
+scale 0.99 0.99 0.99
+rotate 45 0 1 0
+read box.cli
+pop
 
-diffuse  .8 .8 .8  .2 .2 .2
+diffuse 0.2 0.2 0.8  0.2 0.2 0.2
+push
+scale 0.99 0.99 0.99
+rotate 45 1 0 0
+read box.cli
+pop
 
-begin
-vertex -100 -1 -100
-vertex  100 -1 -100
-vertex  100 -1  100
-end
+pop
 
-begin
-vertex  100 -1  100
-vertex -100 -1  100
-vertex -100 -1 -100
-end
-
-# sphere resting on ground
-
-diffuse  .8 .8 .8  .2 .2 .2 
-
-sphere  1  0 0 -4
-
+reset_timer
 write t05.png
+print_timer
 

@@ -1,8 +1,4 @@
-# testing depth-of-field, multiple rays per pixel
-
-rays_per_pixel 100
-
-lens  0.08  3
+# small bunny, in acceleration structure
 
 fov 60
 
@@ -12,76 +8,36 @@ background 0.2 0.2 1
 
 # light sources 
 
-point_light  2 5 0  .8 .8 .8
-point_light -3 4 0  .2 .2 .2
-
-# spheres resting on ground
-
-diffuse  .8 .8 .8  .2 .2 .2
-
-push
-translate -1.5 -1.5 0
-sphere  0.5  0 0 -1
-sphere  0.5  0 0 -2
-sphere  0.5  0 0 -3
-sphere  0.5  0 0 -4
-sphere  0.5  0 0 -5
-sphere  0.5  0 0 -6
-sphere  0.5  0 0 -7
-sphere  0.5  0 0 -8
-sphere  0.5  0 0 -9
-sphere  0.5  0 0 -10
-sphere  0.5  0 0 -11
-sphere  0.5  0 0 -12
-sphere  0.5  0 0 -13
-sphere  0.5  0 0 -14
-sphere  0.5  0 0 -15
-sphere  0.5  0 0 -16
-sphere  0.5  0 0 -17
-sphere  0.5  0 0 -18
-sphere  0.5  0 0 -19
-sphere  0.5  0 0 -20
-pop
-
-push
-translate 1.5 -1.5 0
-sphere  0.5  0 0 -1
-sphere  0.5  0 0 -2
-sphere  0.5  0 0 -3
-sphere  0.5  0 0 -4
-sphere  0.5  0 0 -5
-sphere  0.5  0 0 -6
-sphere  0.5  0 0 -7
-sphere  0.5  0 0 -8
-sphere  0.5  0 0 -9
-sphere  0.5  0 0 -10
-sphere  0.5  0 0 -11
-sphere  0.5  0 0 -12
-sphere  0.5  0 0 -13
-sphere  0.5  0 0 -14
-sphere  0.5  0 0 -15
-sphere  0.5  0 0 -16
-sphere  0.5  0 0 -17
-sphere  0.5  0 0 -18
-sphere  0.5  0 0 -19
-sphere  0.5  0 0 -20
-pop
+point_light  3 4  0  .8 .8 .8
+point_light -3 4  0  .2 .2 .2
 
 # these two triangles acts as a ground plane
 
 diffuse  .8 .8 .8  .2 .2 .2
 
 begin
-vertex -100 -2 -100
-vertex  100 -2 -100
-vertex  100 -2  100
+vertex -100 -1 -100
+vertex  100 -1 -100
+vertex  100 -1  100
 end
 
 begin
-vertex  100 -2  100
-vertex -100 -2  100
-vertex -100 -2 -100
+vertex  100 -1  100
+vertex -100 -1  100
+vertex -100 -1 -100
 end
 
+# the bunny
+
+translate 0 0 -3
+
+diffuse  .8 .4 .4  .2 .2 .2 
+
+begin_list
+read bun500.cli
+end_accel
+
+reset_timer
 write t08.png
+print_timer
 
