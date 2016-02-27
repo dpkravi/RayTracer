@@ -7,16 +7,17 @@ abstract class RenderObj
     Box boundingBox;
     
     RenderObj() {
-      primitiveType = sDefaultType;
+      primitiveType = defaultType;
     }
     
     RenderObj(int primitiveType){
       this.primitiveType = primitiveType;
     }
     
-    RenderObj(Material m)
+    RenderObj(Material m, int primitiveType)
     {
         material = m;
+        primitiveType = defaultType;
     }
     abstract RayCollInfo intersection(Ray r);    
 }
@@ -114,7 +115,7 @@ class Sphere extends RenderObj
     float radius;
     Sphere(float radius, PVector center, Material m)
     {
-        super(m);
+        super(m, sphereType);
         this.radius = radius;
         this.center = center;
     }
@@ -184,7 +185,7 @@ class MovingSphere extends RenderObj {
   
   /** Constructor */
   MovingSphere(float radius, PVector center1, PVector center2, Material m) {
-    super(m);
+    super(m, sphereType);
     this.radius = radius;
     this.startPos = center1; 
     this.endPos = center2;
@@ -249,11 +250,13 @@ class Triangle extends RenderObj
     PVector vertex3;
     Triangle(PVector v1, PVector v2, PVector v3, Material m)
     {
-        super(m);
+        super(m, triangleType);
+        boundingBox = new Box();
         vertex1 = v1;
         vertex2 = v2;
         vertex3 = v3;
     }
+    
     RayCollInfo intersection(Ray r)
     {
       
@@ -331,6 +334,76 @@ class Triangle extends RenderObj
        }
        else
            return new RayCollInfo(false, true);
+    }
+    
+    //Calculate the bounding box
+    boolean calcBoundingBox() { 
+      boundingBox.minPt.x = 1000; 
+      boundingBox.minPt.y = 1000; 
+      boundingBox.minPt.z = 1000;
+      boundingBox.maxPt.x = -1000;
+      boundingBox.maxPt.y = -1000;
+      boundingBox.maxPt.z = -1000;
+      
+      if (vertex1.x < boundingBox.minPt.x) {
+          boundingBox.minPt.x = vertex1.x;
+      }
+      if (vertex1.x > boundingBox.maxPt.x) {
+          boundingBox.maxPt.x = vertex1.x;
+      }
+      if (vertex2.x < boundingBox.minPt.x) {
+          boundingBox.minPt.x = vertex2.x;
+      }
+      if (vertex2.x > boundingBox.maxPt.x) {
+          boundingBox.maxPt.x = vertex2.x;
+      }
+      if (vertex3.x < boundingBox.minPt.x) {
+          boundingBox.minPt.x = vertex3.x;
+      }
+      if (vertex3.x > boundingBox.maxPt.x) {
+          boundingBox.maxPt.x = vertex3.x;
+      }
+      
+      if (vertex1.y < boundingBox.minPt.y) {
+          boundingBox.minPt.y = vertex1.y;
+      }
+      if (vertex1.y > boundingBox.maxPt.y) {
+          boundingBox.maxPt.y = vertex1.y;
+      }
+      if (vertex2.y < boundingBox.minPt.y) {
+          boundingBox.minPt.y = vertex2.y;
+      }
+      if (vertex2.y > boundingBox.maxPt.y) {
+          boundingBox.maxPt.y = vertex2.y;
+      }
+      if (vertex3.y < boundingBox.minPt.y) {
+          boundingBox.minPt.y = vertex3.y;
+      }
+      if (vertex3.y > boundingBox.maxPt.y) {
+          boundingBox.maxPt.y = vertex3.y;
+      }
+      
+      if (vertex1.z < boundingBox.minPt.z) {
+          boundingBox.minPt.z = vertex1.z;
+      }
+      if (vertex1.z > boundingBox.maxPt.z) {
+          boundingBox.maxPt.z = vertex1.z;
+      }
+      if (vertex2.z < boundingBox.minPt.z) {
+          boundingBox.minPt.z = vertex2.z;
+      }
+      if (vertex2.z > boundingBox.maxPt.z) {
+          boundingBox.maxPt.z = vertex2.z;
+      }
+      if (vertex3.z < boundingBox.minPt.z) {
+          boundingBox.minPt.z = vertex3.z;
+      }
+      if (vertex3.z > boundingBox.maxPt.z) {
+          boundingBox.maxPt.z = vertex3.z;
+      }
+  
+      
+      return true; 
     }
 }
 
