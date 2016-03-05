@@ -20,13 +20,14 @@ class Box extends RenderObj {
      maxPt.z = max.z; 
    }
    
-   void set( float xmin, float ymin, float zmin, float xmax, float ymax, float zmax ) {
+   void set( float xmin, float ymin, float zmin, float xmax, float ymax, float zmax, Material mat ) {
      minPt.x = xmin; 
      minPt.y = ymin; 
      minPt.z = zmin; 
      maxPt.x = xmax; 
      maxPt.y = ymax; 
      maxPt.z = zmax; 
+     material = mat;
    }
 
   void copyData( Box box ) {
@@ -175,8 +176,77 @@ class Box extends RenderObj {
   
      return rayCollInfo;
 
+  }
+
+};
+
+class Instance extends RenderObj{
+  
+  public int  index;
+  public PMatrix3D tMat;
+  public PMatrix3D invMat;
+  
+  Instance() {
+    super( instanceType );
+    index = -1; 
+    tMat = new PMatrix3D();
+    invMat = new PMatrix3D();
+  }
+
+  Instance( int _ind, PMatrix3D _Two ) {
+    super( instanceType );
+    index = _ind; 
+    tMat = _Two.get();
+    invMat = tMat.get(); 
+    invMat.invert();
+    material = namedRenderObjs.get(index).material;
 
   }
 
-  
-};
+  RayCollInfo intersection( Ray R ) {
+   PVector tgt = new PVector();
+   PVector p1 = new PVector( R.origin.x, R.origin.y, R.origin.z );
+   float[] p2 = new float[4]; 
+   p2[0] = R.direction.x; 
+   p2[1] = R.direction.y; 
+   p2[2] = R.direction.z; 
+   p2[3] = 0;
+   float[] tgt2 = new float[4];
+   invMat.mult( p1, tgt ); 
+   invMat.mult( p2, tgt2 );
+   
+   PVector P2 = new PVector(tgt.x,tgt.y,tgt.z);
+   PVector V2 = new PVector(tgt2[0], tgt2[1], tgt2[2]);
+   
+   //ray newR = Minv*a + t.Minv*b
+          
+   Ray ray = new Ray(P2,V2); 
+   
+   RayCollInfo rCInfo= namedRenderObjs.get(index).intersection(ray);
+   if( rCInfo.isHit == true ) {
+
+       PMatrix3D inv1 = invMat.get(); 
+       inv1.transpose();
+       PVector p3 = new PVector( R.origin.x + R.direction.x*rCInfo.rootVal, R.origin.y + R.direction.y*rCInfo.rootVal, R.origin.z + R.direction.z*rCInfo.rootVal );
+       rCInfo.hitVec = new PVector(p3.x, p3.y, p3.z);
+       
+       PVector n4 = new PVector( rCInfo.normal.x, rCInfo.normal.y, rCInfo.normal.z );
+       PVector tgt4 = new PVector();
+       //newNormal = Transpose(Minv)*normal
+       inv1.mult(n4, tgt4);
+       rCInfo.normal.x = tgt4.x; 
+       rCInfo.normal.y = tgt4.y; 
+       rCInfo.normal.z = tgt4.z; 
+   }
+    
+   return rCInfo;
+  }
+
+  void cloneData( Instance instance ) {
+    index = instance.index;
+    tMat = instance.tMat;
+    invMat = instance.invMat;
+    material = instance.material;
+  }
+
+}  

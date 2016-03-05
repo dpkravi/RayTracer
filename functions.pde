@@ -71,6 +71,8 @@ boolean isIntersect( Ray shadowRay, int i ) {
 PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, RenderObj currentObj, RayCollInfo rayCollInfo)
 {
     //Ambient color
+    
+
     PVector finalColor = new PVector(currentObj.material.ambientCoeff.x, currentObj.material.ambientCoeff.y, currentObj.material.ambientCoeff.z);
     for(int i = 0; i < lights.size(); i++)
     {
@@ -147,9 +149,9 @@ PVector computeColor(ArrayList<RenderObj> renderList, Ray currentRay){
     
     if(renderList.size() > 0)
     {  
-    
+
       if(setLens){
-  
+
          //Our default lens / eye location is at origin
          PVector eyeLoc = new PVector(0,0,0);
          //Find intersection of the ray with the focal plane
@@ -171,20 +173,23 @@ PVector computeColor(ArrayList<RenderObj> renderList, Ray currentRay){
 
       }
       else{
+
         newRay = currentRay;
       }
 
       RenderObj currentRenderObj = null;
       RayCollInfo rayCollInfo = firstIntersection(newRay);
+//    print(" "+rayCollInfo.isHit);
       if(rayCollInfo.objIndex!=-1){
          currentRenderObj = renderList.get(rayCollInfo.objIndex);
       }
       if(rayCollInfo.isHit)
-       {
+       {         
            return(getColor(lights,renderList,currentRenderObj, rayCollInfo));
        }
        else
        {
+
             return(backgroundColor);
        }
     }

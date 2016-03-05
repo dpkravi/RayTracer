@@ -1,5 +1,5 @@
 //This will be the base class from which shapes will be extended
-abstract class RenderObj
+class RenderObj
 {
     Material material;
     int primitiveType;
@@ -19,7 +19,24 @@ abstract class RenderObj
         material = m;
         primitiveType = defaultType;
     }
-    abstract RayCollInfo intersection(Ray r);    
+
+    void cloneData( RenderObj renderObj ) {};
+    
+    RayCollInfo intersection(Ray r)
+    {
+        println("Code should not enter here during proper execution");
+        return null;  
+    };
+    int getPrimitiveType(){
+      return primitiveType;
+    }
+    
+    void setMaterial( Material m)
+    {
+        material = m;
+    }
+  
+    
 }
 
 class Light
@@ -120,6 +137,13 @@ class Sphere extends RenderObj
         this.center = center;
     }
     
+    Sphere()
+    {
+        super(sphereType);
+        center = new PVector(0,0,0);
+        radius = 1;
+    }
+    
     RayCollInfo intersection(Ray r)
     {
         //Used some formulae from https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection & 
@@ -172,6 +196,15 @@ class Sphere extends RenderObj
             rayCollInfo = new RayCollInfo(false);
             return rayCollInfo;
         }
+    }
+    
+    void cloneData( Sphere sphere ) {
+        center.x = sphere.center.x;
+        center.y = sphere.center.y;
+        center.z = sphere.center.z;
+        radius = sphere.radius;
+        
+        material = sphere.material;
     }
 }
 
@@ -257,6 +290,14 @@ class Triangle extends RenderObj
         vertex3 = v3;
     }
     
+    Triangle(){
+        super( triangleType );  
+        boundingBox = new Box(); 
+        vertex1 = new PVector(0,0,0);
+        vertex2 = new PVector(0,0,0);
+        vertex3 = new PVector(0,0,0);
+    }
+    
     RayCollInfo intersection(Ray r)
     {
       
@@ -336,6 +377,13 @@ class Triangle extends RenderObj
            return new RayCollInfo(false, true);
     }
     
+    void cloneData(Triangle triangle){
+        vertex1 = triangle.vertex1;
+        vertex2 = triangle.vertex2;
+        vertex3 = triangle.vertex3;
+        material = triangle.material;
+    }
+    
     //Calculate the bounding box
     boolean calcBoundingBox() { 
       boundingBox.minPt.x = 1000; 
@@ -364,6 +412,8 @@ class Triangle extends RenderObj
           boundingBox.maxPt.x = vertex3.x;
       }
       
+      
+      
       if (vertex1.y < boundingBox.minPt.y) {
           boundingBox.minPt.y = vertex1.y;
       }
@@ -383,6 +433,8 @@ class Triangle extends RenderObj
           boundingBox.maxPt.y = vertex3.y;
       }
       
+      
+      
       if (vertex1.z < boundingBox.minPt.z) {
           boundingBox.minPt.z = vertex1.z;
       }
@@ -401,8 +453,7 @@ class Triangle extends RenderObj
       if (vertex3.z > boundingBox.maxPt.z) {
           boundingBox.maxPt.z = vertex3.z;
       }
-  
-      
+        
       return true; 
     }
 }

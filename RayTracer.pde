@@ -16,7 +16,7 @@ int bvhType = 6;
 int timer;
 
 
-
+ 
 int u=0,v=0;   
 float lensRadius, focalDistance;
 boolean setLens = false;
@@ -89,6 +89,8 @@ void keyPressed()
     setLens = false;
     raysPerPixel = 1;
     matrix.reset();
+    namedRenderObjs.clear();
+    renderObjNames.clear();
     switch(key)
     {
         case '1':  interpreter("t01.cli");
@@ -124,6 +126,7 @@ void keyPressed()
 void interpreter(String filename)
 {
   
+    RenderObj current = new RenderObj();
     String str[] = loadStrings(filename);
     if (str == null) 
         println("Error! Failed to read the file.");
@@ -171,6 +174,19 @@ void interpreter(String filename)
             PVector ambientCoeff = new PVector(float(token[4]), float(token[5]), float(token[6]));
             currentSurface = new Material(diffuseCoeff, ambientCoeff);
         }
+        // Named object with only sphere currently. Must fix this
+        else if( token[0].equals("named_object") ) {
+          String name = token[1];
+          addNamedObject( current, name );
+        }
+
+        //Instance reading
+        else if( token[0].equals("instance") ) {
+         int index = getInstanceIndex(token[1]);
+         Instance instance = new Instance(index, matrix);
+         renderList.add((Instance) instance);
+        }
+        
         else if (token[0].equals("sphere"))
         {
             float radius = float(token[1]);
@@ -189,8 +205,9 @@ void interpreter(String filename)
             
             Material sphereSurface = new Material(currentSurface);
             Sphere sphere = new Sphere(radius, center, sphereSurface);
-            renderList.add(sphere);
-           
+            sphere.primitiveType = sphereType;
+            current  = (Sphere) sphere;
+          
         }
         else if (token[0].equals("moving_sphere"))
         {
@@ -222,6 +239,7 @@ void interpreter(String filename)
             
             Material sphereSurface = new Material(currentSurface);
             MovingSphere movingSphere = new MovingSphere(radius, center1, center2, sphereSurface);
+            current = movingSphere;
             renderList.add(movingSphere);
             
         }
@@ -251,6 +269,7 @@ void interpreter(String filename)
               {
                   Material triangleShader = new Material(currentSurface);
                   Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
+                  current = triangle;
                   renderList.add((RenderObj)triangle);
                   //println("Vertices of the Triangle");
                   //println(vertices.get(0));
@@ -311,11 +330,10 @@ void interpreter(String filename)
             zmax = Float.parseFloat( token[6] );      
             
             Box box = new Box();
-            box.set( xmin, ymin, zmin, xmax, ymax, zmax );
-            box.setDiffuseCoeff( cdr, cdg, cdb );
-            box.setAmbienceCoeff( car, cag, cab );
-            
-            gEnv.addPrimitive( box );
+            Material boxSurface = new Material(currentSurface);
+            box.set( xmin, ymin, zmin, xmax, ymax, zmax, boxSurface );
+                       
+            renderList.add(box);
     
         }
     
