@@ -39,13 +39,7 @@ class Box extends RenderObj {
      maxPt.y = box.maxPt.y; 
      maxPt.z = box.maxPt.z; 
      
-     material.diffuseCoeff.x = box.material.diffuseCoeff.x;
-     material.diffuseCoeff.y = box.material.diffuseCoeff.y;
-     material.diffuseCoeff.z = box.material.diffuseCoeff.z;
-     material.ambientCoeff.x = box.material.ambientCoeff.x;
-     material.ambientCoeff.y = box.material.ambientCoeff.y;
-     material.ambientCoeff.z = box.material.ambientCoeff.z;
-
+     material = box.material;
   }
   
   RayCollInfo intersection(Ray r) {
@@ -169,6 +163,9 @@ class Box extends RenderObj {
        return new RayCollInfo(false);
      }
   
+     if(n.dot(r.direction)>0){
+        n.mult(-1);
+     }
      // Store collision info
      PVector hitPosition = new PVector(r.origin.x + near * r.direction.x, r.origin.y + near * r.direction.y, r.origin.z + near * r.direction.z);
      PVector reflectionVector = new PVector(-r.direction.x, -r.direction.y, -r.direction.z);
