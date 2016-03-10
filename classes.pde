@@ -36,20 +36,6 @@ class RenderObj
         material = m;
     }
   
-    boolean calcBoundaryBox(){
-       return false; 
-    }
-    
-    float[] getBoundaryBoxDimensions(){
-        float[] bboxdims = new float[6];
-        bboxdims[0] = boundingBox.minPt.x; 
-        bboxdims[1] = boundingBox.minPt.y; 
-        bboxdims[2] = boundingBox.minPt.z;
-        bboxdims[3] = boundingBox.maxPt.x;
-        bboxdims[4] = boundingBox.maxPt.y; 
-        bboxdims[5] = boundingBox.maxPt.z;   
-        return bboxdims; 
-    }
     
 }
 
@@ -219,10 +205,6 @@ class Sphere extends RenderObj
         radius = sphere.radius;
         
         material = sphere.material;
-    }
-    
-    boolean calcBoundingBox(){
-       return false; 
     }
 }
 

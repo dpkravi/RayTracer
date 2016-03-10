@@ -15,8 +15,6 @@ int bvhType = 6;
 
 int timer;
 
-boolean readListFlag = false;
-
 
  
 int u=0,v=0;   
@@ -187,27 +185,6 @@ void interpreter(String filename)
          int index = getInstanceIndex(token[1]);
          Instance instance = new Instance(index, matrix);
          renderList.add((Instance) instance);
-        }
-        
-        //Start reading a list of objects
-        else if( token[0].equals("begin_list") ) {
-          readListFlag = true;  
-        } 
-        
-        //End reading the list of objects and add the list to render list
-        else if( token[0].equals("end_list") ) {
-          readListFlag = false;
-          
-          // Fill the list with the objects in the stack
-          list = new List();
-          int n = mObjStack.getSize();
-          for( int j = 0; j < n; ++j ) {
-            list.addObject( mObjStack.pop() );
-          }
-          
-          // Save the list
-          gEnv.addPrimitive( list );
-          
         }
         
         else if (token[0].equals("sphere"))
