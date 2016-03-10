@@ -11,3 +11,5 @@ Features:
 - Motion Blur
 - Disk light with soft shadows
 - Depth-of-Field with a lens
+- Object Instancing
+- Bounding box. Can be used to render a box too
