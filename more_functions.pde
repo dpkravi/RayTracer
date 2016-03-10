@@ -34,3 +34,52 @@ int getInstanceIndex( String name ) {
   }
   return -1;   
 }
+
+/**< combine: Get the bounding box from two bounding boxes */
+Box combineBoxes( Box leftBox, Box rightBox) {
+
+  Box b = new Box();
+  if (leftBox.minPt.x < rightBox.minPt.x) {
+    b.minPt.x = leftBox.minPt.x;
+  } 
+  else {
+    b.minPt.x = rightBox.minPt.x;
+  }
+  
+  if (leftBox.minPt.y < rightBox.minPt.y) {
+    b.minPt.y = leftBox.minPt.y;
+  } 
+  else {
+    b.minPt.y = rightBox.minPt.y;
+  }
+  
+  if (leftBox.minPt.z < rightBox.minPt.z) {
+    b.minPt.z = leftBox.minPt.z;
+  } 
+  else {
+    b.minPt.z = rightBox.minPt.z;
+  }
+
+  if (leftBox.maxPt.x > rightBox.maxPt.x) {
+    b.maxPt.x = leftBox.maxPt.x;
+  } 
+  else {
+    b.maxPt.x = rightBox.maxPt.x;
+  }
+  
+  if (leftBox.maxPt.y > rightBox.maxPt.y) {
+    b.maxPt.y = leftBox.maxPt.y;
+  }
+  else {
+    b.maxPt.y = rightBox.maxPt.y;
+  }
+  
+  if (leftBox.maxPt.z > rightBox.maxPt.z) {
+    b.maxPt.z = leftBox.maxPt.z;
+  } 
+  else {
+    b.maxPt.z = rightBox.maxPt.z;
+  }
+  
+  return b;
+}

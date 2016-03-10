@@ -36,6 +36,20 @@ class RenderObj
         material = m;
     }
   
+    boolean calcBoundaryBox(){
+       return false; 
+    }
+    
+    float[] getBoundaryBoxDimensions(){
+        float[] bboxdims = new float[6];
+        bboxdims[0] = boundingBox.minPt.x; 
+        bboxdims[1] = boundingBox.minPt.y; 
+        bboxdims[2] = boundingBox.minPt.z;
+        bboxdims[3] = boundingBox.maxPt.x;
+        bboxdims[4] = boundingBox.maxPt.y; 
+        bboxdims[5] = boundingBox.maxPt.z;   
+        return bboxdims; 
+    }
     
 }
 
@@ -205,6 +219,10 @@ class Sphere extends RenderObj
         radius = sphere.radius;
         
         material = sphere.material;
+    }
+    
+    boolean calcBoundingBox(){
+       return false; 
     }
 }
 
@@ -485,4 +503,47 @@ public class MatrixStack {
         size--;
         return matrix;
     }
+};
+
+public class PrimitiveStack {
+  private int size = 0;
+  private RenderObj renderObjects[];
+  private static final int max = 50;
+
+  public PrimitiveStack() {
+      renderObjects = new RenderObj[max];
+      for(int i=0; i<max; ++i) {
+        renderObjects[i] = new RenderObj();
+      }
+  }
+  
+  public void push(RenderObj renderObj) {
+      if(size == renderObjects.length) {
+        print("Object Stack capacity exceeded");
+        return;
+      }   
+      if( renderObj.getPrimitiveType() == triangleType ) {
+         renderObjects[size] = new Triangle();
+        ((Triangle) renderObjects[size]).cloneData( (Triangle) renderObj );  
+      } 
+      else{
+         println("Not adding anything");
+      }
+      size++;
+  }
+  
+  public RenderObj pop() {
+      RenderObj renderObj = new RenderObj(); 
+      if( renderObjects[size - 1].getPrimitiveType() == triangleType ) {
+        renderObj = new Triangle();
+        ((Triangle) renderObj).cloneData((Triangle)renderObjects[size - 1]);
+      } 
+    size--;
+      
+    return renderObj;
+  }
+  
+  public int getSize() {
+      return size; 
+  }
 };

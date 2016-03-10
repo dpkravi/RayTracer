@@ -15,6 +15,8 @@ int bvhType = 6;
 
 int timer;
 
+boolean readListFlag = false;
+
 
  
 int u=0,v=0;   
@@ -55,9 +57,10 @@ int closestIndex = -1;
 PVector closestNormal = new PVector(0,0,0);
 PVector closestHit;
 
- MatrixStack matrixStack;
- PMatrix3D matrix;
-    
+MatrixStack matrixStack;
+PrimitiveStack primStack;
+PMatrix3D matrix;
+List list = new List();    
 /////////////////////////////////////////////////////////////////////
 // Some initializations for the scene.
 void setup()
@@ -185,6 +188,27 @@ void interpreter(String filename)
          int index = getInstanceIndex(token[1]);
          Instance instance = new Instance(index, matrix);
          renderList.add((Instance) instance);
+        }
+        
+        //Start reading a list of objects
+        else if( token[0].equals("begin_list") ) {
+          readListFlag = true;  
+        } 
+        
+        //End reading the list of objects and add the list to render list
+        else if( token[0].equals("end_list") ) {
+          readListFlag = false;
+          
+          // Fill the list with the objects in the stack
+          list = new List();
+          int n = primStack.getSize();
+          for( int j = 0; j < n; ++j ) {
+            list.addToList(primStack.pop());
+          }
+          
+          // Save the list
+          renderList.add(list);
+          
         }
         
         else if (token[0].equals("sphere"))
