@@ -179,9 +179,9 @@ class Box extends RenderObj {
 
 class Instance extends RenderObj{
   
-  public int  index;
-  public PMatrix3D tMat;
-  public PMatrix3D invMat;
+  int  index;
+  PMatrix3D tMat;
+  PMatrix3D invMat;
   
   Instance() {
     super( instanceType );
@@ -247,3 +247,134 @@ class Instance extends RenderObj{
   }
 
 }  
+
+/****************************
+ * @class List
+ ****************************/
+class List extends RenderObj {
+
+//  public int MAX_NUM_PRIMITIVES = 1600;   
+  int listSize;
+  ArrayList<RenderObj> listObjects;
+//  public Primitive[] mObjects = new Primitive[MAX_NUM_PRIMITIVES];
+  
+  
+  List() {
+    super(listType);
+    boundingBox = new Box();
+    listSize = 0;
+    listObjects = new ArrayList<RenderObj>();
+  }
+  
+  void cloneData( List list ) {
+    listSize = 0;
+    for( int i = 0; i < listSize; ++i ) {
+      if( list.listObjects.get(i).getPrimitiveType() == triangleType ) { 
+        addToList((Triangle) list.listObjects.get(i) ); 
+      }      
+      //Add spheres and other types too
+    }
+    
+    material = list.material;
+
+  }
+
+  void addToList(RenderObj renderObj) {
+
+      if( renderObj.getPrimitiveType() == sphereType ) {
+        listObjects.add((Sphere)renderObj);        
+      } 
+      else if(renderObj.getPrimitiveType() == triangleType ) {
+        listObjects.add((Triangle)renderObj);        
+      } 
+      else if(renderObj.getPrimitiveType() == instanceType ) {
+        listObjects.add((Instance)renderObj);        
+      } 
+      else if(renderObj.getPrimitiveType() == boxType ) {
+        listObjects.add((Box)renderObj);        
+      } 
+      else if(renderObj.getPrimitiveType() == listType ) {
+        listObjects.add((List)renderObj);           
+      }    
+    listSize++;
+  }
+  
+  int getSize(){
+    return listSize; 
+  }
+
+  boolean calcBoundingBox() {
+    
+    boundingBox.minPt.x = 1000; 
+    boundingBox.minPt.y = 1000; 
+    boundingBox.minPt.z = 1000;
+    boundingBox.maxPt.x = -1000; 
+    boundingBox.maxPt.y = -1000; 
+    boundingBox.maxPt.z = -1000; 
+        
+    float[] b = new float[6];
+    
+    // Loop through all bounding boxes of the list objects and calculate the bounding box for this list as a whole
+    for( int i = 0; i < listSize; i++ ) {
+       listObjects.get(i).calcBoundaryBox();
+       b = listObjects.get(i).getBoundaryBoxDimensions();
+       if (boundingBox.minPt.x > b[0]) {
+           boundingBox.minPt.x = b[0];
+       }
+       if (boundingBox.minPt.y > b[1]) {
+           boundingBox.minPt.y = b[1];
+       }
+       if (boundingBox.minPt.z > b[2]) {
+           boundingBox.minPt.z = b[2];
+       }
+       if (boundingBox.maxPt.x > b[3]) {
+           boundingBox.maxPt.x = b[3];
+       }
+       if (boundingBox.maxPt.y > b[4]) {
+           boundingBox.maxPt.y = b[4];
+       }
+       if (boundingBox.maxPt.z > b[5]) {
+           boundingBox.maxPt.z = b[5];
+       }
+    } 
+    return true;
+  }
+
+
+    /**< hit function */
+  RayCollInfo intersection(Ray R) {
+    RayCollInfo rayCollInfo = new RayCollInfo(false);
+    RayCollInfo boundingBoxHit = boundingBox.intersection(R);
+    
+    if( boundingBoxHit.isHit ) {
+
+      double minDist = 1000;
+      int minInd = -1;
+      boolean got = false;
+
+      for( int i = 0; i < listSize; i++ ) {
+         RayCollInfo objectHit = ( (Triangle) listObjects.get(i)).intersection(R);
+         if( objectHit.isHit ) {
+            got = true;
+            if( objectHit.rootVal < minDist ) {
+                minDist = objectHit.rootVal;
+                minInd = i;
+                rayCollInfo = objectHit;
+            } 
+        }
+        
+      }
+      
+      if( got ) {
+          material = listObjects.get(minInd).material;   
+      }
+      return rayCollInfo;
+    }
+    else{
+      return new RayCollInfo(false); 
+    }
+
+  }
+  
+  
+};
