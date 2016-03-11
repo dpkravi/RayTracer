@@ -506,18 +506,18 @@ public class MatrixStack {
 };
 
 public class PrimitiveStack {
-  private int size = 0;
-  private RenderObj renderObjects[];
-  private static final int max = 50;
+  int size = 0;
+  RenderObj renderObjects[];
+  static final int max = 50;
 
-  public PrimitiveStack() {
+  PrimitiveStack() {
       renderObjects = new RenderObj[max];
       for(int i=0; i<max; ++i) {
         renderObjects[i] = new RenderObj();
       }
   }
   
-  public void push(RenderObj renderObj) {
+  void push(RenderObj renderObj) {
       if(size == renderObjects.length) {
         print("Object Stack capacity exceeded");
         return;

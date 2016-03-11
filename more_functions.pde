@@ -28,7 +28,6 @@ int getInstanceIndex( String name ) {
   for( int i = 0; i < renderObjNames.size(); i++ ) {
       if( renderObjNames.get(i).equals(name) ) 
       { 
-          println("Instance Index is "+i);
           return i; 
       }
   }

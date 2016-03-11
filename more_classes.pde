@@ -248,15 +248,11 @@ class Instance extends RenderObj{
 
 }  
 
-/****************************
- * @class List
- ****************************/
-class List extends RenderObj {
 
-//  public int MAX_NUM_PRIMITIVES = 1600;   
+class List extends RenderObj {
+ 
   int listSize;
   ArrayList<RenderObj> listObjects;
-//  public Primitive[] mObjects = new Primitive[MAX_NUM_PRIMITIVES];
   
   
   List() {
@@ -378,3 +374,186 @@ class List extends RenderObj {
   
   
 };
+
+
+
+class BVH extends RenderObj{
+
+  public int axis;
+  public RenderObj leftObj;
+  public RenderObj rightObj;
+  
+  BVH( RenderObj[] objects, int a ) {
+    super(bvhType);
+    boundingBox = new Box();
+    axis = a;
+    leftObj = new RenderObj();
+    rightObj = new RenderObj();
+    calcBoundingBox(objects);
+
+    //Currently coded only for triangles. 
+    if( objects.length == 1 ) {
+        leftObj = (Triangle) objects[0];
+        material = leftObj.material; 
+        //mAmb = left.mAmb;
+        //mDiff = left.mDiff;
+           
+    } else if( objects.length == 2 ) {
+        leftObj = (Triangle) objects[0];
+        rightObj = (Triangle) objects [1];
+    } else {       
+        Triangle[][] partitions = partitionAtAxis(objects); 
+        if( partitions[0].length > 0 ) {
+            leftObj = new BVH( partitions[0], (axis + 1) % 3 );
+        }  
+    
+        if( partitions[1].length > 0 ) { 
+            rightObj = new BVH( partitions[1], (axis + 1) %3 );       
+        }
+    }
+    
+  }
+  
+  void copyData( BVH bvh ) { print("BVH Should not come here");}
+  
+  boolean calcBoundingBox(RenderObj[] objects) {
+
+    boundingBox.minPt.x = 1000; 
+    boundingBox.minPt.y = 1000; 
+    boundingBox.minPt.z = 1000;
+    boundingBox.maxPt.x = -1000; 
+    boundingBox.maxPt.y = -1000; 
+    boundingBox.maxPt.z = -1000; 
+        
+    float[] b = new float[6];
+    
+    for( int i = 0; i < objects.length; i++ ) {
+       b = objects[i].getBoundaryBoxDimensions();
+       if (boundingBox.minPt.x > b[0]) {
+           boundingBox.minPt.x = b[0];
+       }
+       if (boundingBox.minPt.y > b[1]) {
+           boundingBox.minPt.y = b[1];
+       }
+       if (boundingBox.minPt.z > b[2]) {
+           boundingBox.minPt.z = b[2];
+       }
+       if (boundingBox.maxPt.x > b[3]) {
+           boundingBox.maxPt.x = b[3];
+       }
+       if (boundingBox.maxPt.y > b[4]) {
+           boundingBox.maxPt.y = b[4];
+       }
+       if (boundingBox.maxPt.z > b[5]) {
+           boundingBox.maxPt.z = b[5];
+       }
+    }  
+    
+    return true;
+
+  }
+  
+  Triangle[][] partitionAtAxis( RenderObj[] objects ) {
+    Triangle[][] parts = new Triangle[2][];
+    // Find m: Middle point in axis
+    float m = 0;
+    int n = objects.length;
+    if(axis == 0)
+        m = ( boundingBox.minPt.x + boundingBox.maxPt.x ) / 2.0; 
+    if(axis == 1)
+        m = ( boundingBox.minPt.y + boundingBox.maxPt.y ) / 2.0; 
+    if(axis == 2)
+        m = ( boundingBox.minPt.z + boundingBox.maxPt.z ) / 2.0; 
+        
+    // Partition
+    Triangle[] tleft = new Triangle[n];
+    Triangle[] tright = new Triangle[n];    
+    int counter_left = 0;
+    int counter_right = 0;
+    
+    //Currently works only for triangle 
+    float p = 0;
+    for( int i = 0; i < n; ++i ) {
+        if(axis == 0)
+            p = ( objects[i].boundingBox.maxPt.x + objects[i].boundingBox.minPt.x ) / 2.0;
+        if(axis == 1)
+            p = ( objects[i].boundingBox.maxPt.y + objects[i].boundingBox.minPt.y ) / 2.0;
+        if(axis == 2)
+            p = ( objects[i].boundingBox.maxPt.z + objects[i].boundingBox.minPt.z ) / 2.0;
+        if( p < m ) { 
+            tleft[counter_left] = (Triangle) objects[i];
+            counter_left++; 
+        } else {
+            tright[counter_right] = (Triangle) objects[i]; 
+            counter_right++;
+        }    
+    }
+    
+    // Now put the elements into pleft and pright
+    Triangle[] pleft = new Triangle[counter_left];
+    Triangle[] pright = new Triangle[counter_right];    
+    for( int i = 0; i < counter_left; ++i ) {
+      pleft[i] = (Triangle) tleft[i];
+    }
+
+    for( int i = 0; i < counter_right; ++i ) {
+      pright[i] = (Triangle) tright[i];
+    }
+   
+   parts[0] = pleft;
+   parts[1] = pright; 
+  
+    return parts;
+  }
+
+
+  RayCollInfo intersection( ray R) { 
+    
+    RayCollInfo boundingBox.intersection(R);
+    if( bb.hit( _R, _rec ) ) {
+      hitRecord lrec = new hitRecord();
+      hitRecord rrec = new hitRecord();
+      boolean left_hit, right_hit;
+      
+      left_hit = left.hit( _R, lrec );
+      right_hit = right.hit( _R, rrec );
+      if( left_hit && right_hit ) {
+        if( lrec.dist < rrec.dist ) {
+          _rec.copyData(lrec);
+        } else {
+          _rec.copyData(rrec);
+        }        
+        mAmb[0] = _rec.amb[0]; mAmb[1] = _rec.amb[1]; mAmb[2] = _rec.amb[2];
+        mDiff[0] = _rec.diff[0]; mDiff[1] = _rec.diff[1]; mDiff[2] = _rec.diff[2];
+        return true;
+      } else if( left_hit ) {
+        _rec.copyData(lrec);
+        mAmb[0] = _rec.amb[0]; mAmb[1] = _rec.amb[1]; mAmb[2] = _rec.amb[2];
+        mDiff[0] = _rec.diff[0]; mDiff[1] = _rec.diff[1]; mDiff[2] = _rec.diff[2];
+        return true;
+      } else if( right_hit ) {
+        _rec.copyData(rrec);
+        mAmb[0] = _rec.amb[0]; mAmb[1] = _rec.amb[1]; mAmb[2] = _rec.amb[2];
+        mDiff[0] = _rec.diff[0]; mDiff[1] = _rec.diff[1]; mDiff[2] = _rec.diff[2];
+        return true;
+      } else {
+        return false;
+      }
+      
+      
+    } 
+    //No intersection
+    else {
+      return false;
+    }
+    
+    
+  }
+  
+  
+  void printInfo() {
+  }
+
+  
+  
+};  

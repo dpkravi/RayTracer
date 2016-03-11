@@ -58,7 +58,7 @@ PVector closestNormal = new PVector(0,0,0);
 PVector closestHit;
 
 MatrixStack matrixStack;
-PrimitiveStack primStack;
+PrimitiveStack primStack = new PrimitiveStack();
 PMatrix3D matrix;
 List list = new List();    
 /////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ void setup()
     // grab the global matrix values (to use later when drawing pixels)
     PMatrix3D global_mat = (PMatrix3D) getMatrix();
     global_mat.get(gmat);
-    printMatrix();
+//    printMatrix();
     
     //Initializing the matrices and reseting it
     matrixStack = new MatrixStack();
@@ -147,7 +147,7 @@ void interpreter(String filename)
             camBottom = -(tan(fovInRadians/2));
             camLeft = -(tan(fovInRadians/2));
             camRight = (tan(fovInRadians/2));
-            println("Camera: "+camTop+" "+camBottom+" "+camLeft+" "+camRight);
+ //           println("Camera: "+camTop+" "+camBottom+" "+camLeft+" "+camRight);
         }
         else if (token[0].equals("background"))
         {
@@ -198,18 +198,29 @@ void interpreter(String filename)
         //End reading the list of objects and add the list to render list
         else if( token[0].equals("end_list") ) {
           readListFlag = false;
-          
-          // Fill the list with the objects in the stack
           list = new List();
           int n = primStack.getSize();
           for( int j = 0; j < n; ++j ) {
             list.addToList(primStack.pop());
           }
-          
-          // Save the list
           renderList.add(list);
           
         }
+        
+        //else if( token[0].equals("end_accel") ) {
+        //  readListFlag = false;
+        //  int stackSize = primStack.getSize();
+        //  RenderObj[] objects = new RenderObj[stackSize];
+        //  for( int j = 0; j < stackSize; j++) {
+        //    objects[j] = (Triangle)(primStack.pop());
+        //    ((Triangle)objects[j]).calcBoundingBox();
+        //  }      
+        //  BVH bvHierarchy = new BVH( objects, 0 );
+          
+        //  // Save the list
+        //  renderList.add(bvHierarchy);
+          
+        //}
         
         else if (token[0].equals("sphere"))
         {
@@ -278,7 +289,7 @@ void interpreter(String filename)
             interpreter (token[1]);
         }
         else if (token[0].equals("begin")){
-             //Ignore
+            //do nothing
         }
         else if (token[0].equals("vertex")){
             float[] result = new float[3];
@@ -293,17 +304,18 @@ void interpreter(String filename)
               {
                   Material triangleShader = new Material(currentSurface);
                   Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
-                  current = triangle;
-                  renderList.add((RenderObj)triangle);
-                  //println("Vertices of the Triangle");
-                  //println(vertices.get(0));
-                  //println(vertices.get(1));
-                  //println(vertices.get(2));
+                  triangle.primitiveType=1;
+                  if(!readListFlag){
+                      renderList.add((RenderObj)triangle);
+                  }
+                  else {
+                      primStack.push(triangle);
+                  }
                   vertices.clear();
               }
         }
         else if (token[0].equals("end")){
-            //Ignore
+ 
         }
         else if (token[0].equals("push")){
           matrixStack.push(matrix);
@@ -361,10 +373,19 @@ void interpreter(String filename)
     
         }
     
+        else if (token[0].equals("reset_timer")) {
+          timer = millis();
+        }
+        else if (token[0].equals("print_timer")) {
+          int new_timer = millis();
+          int diff = new_timer - timer;
+          float seconds = diff / 1000.0;
+          println ("timer = " + seconds);
+        }
+
     
         else if (token[0].equals("write"))
         {
-          println("Renderlist size : "+ renderList.size());
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
