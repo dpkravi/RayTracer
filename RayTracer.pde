@@ -203,22 +203,23 @@ void interpreter(String filename)
           for( int j = 0; j < n; ++j ) {
             list.addToList(primStack.pop());
           }
+          ((List)list).calcBoundingBox();
           renderList.add(list);
           
         }
         
         //else if( token[0].equals("end_accel") ) {
-        //  readListFlag = false;
-        //  int stackSize = primStack.getSize();
-        //  RenderObj[] objects = new RenderObj[stackSize];
-        //  for( int j = 0; j < stackSize; j++) {
-        //    objects[j] = (Triangle)(primStack.pop());
-        //    ((Triangle)objects[j]).calcBoundingBox();
-        //  }      
-        //  BVH bvHierarchy = new BVH( objects, 0 );
+        // readListFlag = false;
+        // int stackSize = primStack.getSize();
+        // RenderObj[] objects = new RenderObj[stackSize];
+        // for( int j = 0; j < stackSize; j++) {
+        //   objects[j] = (Triangle)(primStack.pop());
+        //   ((Triangle)objects[j]).calcBoundingBox();
+        // }      
+        // BVH bvHierarchy = new BVH( objects, 0 );
           
-        //  // Save the list
-        //  renderList.add(bvHierarchy);
+        // // Save the list
+        // renderList.add(bvHierarchy);
           
         //}
         
@@ -389,6 +390,8 @@ void interpreter(String filename)
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
+          
+//          println("RenderList SizE  : "+ renderList.size()); 
           boolean test = true;
           Ray currentRay = new Ray();
            for(u = 0; u < height; u++){
@@ -419,10 +422,11 @@ void interpreter(String filename)
              } 
 
            } 
-
+            
             loadPixels();
             if(!filename.equals("rect_test.cli"))
             {
+ //               println(colorArray[150][150].x);
                 // Convert the color array for updating Pixels to screen
                 for(int u = 0;u < height; u++){
                     for (int v = 0; v < width; v++){

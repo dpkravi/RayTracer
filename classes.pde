@@ -36,11 +36,11 @@ class RenderObj
         material = m;
     }
   
-    boolean calcBoundaryBox(){
+    boolean calcBoundingBox(){
        return false; 
     }
     
-    float[] getBoundaryBoxDimensions(){
+    float[] getBoundingBoxDimensions(){
         float[] bboxdims = new float[6];
         bboxdims[0] = boundingBox.minPt.x; 
         bboxdims[1] = boundingBox.minPt.y; 
@@ -121,6 +121,10 @@ class RayCollInfo
     boolean isTriangle;
     float rootVal;
     int objIndex;
+    
+    //Adding this temporarily
+    Material material;
+    
     public RayCollInfo (PVector reflVec, PVector hitVec,PVector normal, boolean isHit, float rootVal)
     {
         this.reflVec = reflVec;
@@ -387,8 +391,11 @@ class Triangle extends RenderObj
            hitPosition.mult(determinant);
             
            reflectionVector.normalize();
-            
-           return new RayCollInfo(reflectionVector, hitPosition, normal, true, determinant);
+           
+           RayCollInfo rayCollInfo = new RayCollInfo(reflectionVector, hitPosition, normal, true, determinant);
+           rayCollInfo.material = material;
+           
+           return rayCollInfo;
           
        }
        else
@@ -508,7 +515,7 @@ public class MatrixStack {
 public class PrimitiveStack {
   int size = 0;
   RenderObj renderObjects[];
-  static final int max = 50;
+  static final int max = 70000;
 
   PrimitiveStack() {
       renderObjects = new RenderObj[max];
