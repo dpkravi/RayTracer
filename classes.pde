@@ -3,30 +3,30 @@ class RenderObj
 {
     Material material;
     int primitiveType;
-    
+    //Each primitive object will have a bounding box
     Box boundingBox;
     
     RenderObj() {
-      primitiveType = defaultType;
+      primitiveType = base;
     }
     
     RenderObj(int primitiveType){
       this.primitiveType = primitiveType;
     }
     
-    RenderObj(Material m, int primitiveType)
+    RenderObj(Material m, int base)
     {
         material = m;
-        primitiveType = defaultType;
+        primitiveType = base;
     }
-
-    void cloneData( RenderObj renderObj ) {};
     
     RayCollInfo intersection(Ray r)
     {
+      //For Debugging. Code will enter here only if primitive is not initialized. 
         println("Code should not enter here during proper execution");
         return null;  
     };
+    
     int getPrimitiveType(){
       return primitiveType;
     }
@@ -40,15 +40,16 @@ class RenderObj
        return false; 
     }
     
+    //Returns the boundary dimensions as a float array 
     float[] getBoundingBoxDimensions(){
-        float[] bboxdims = new float[6];
-        bboxdims[0] = boundingBox.minPt.x; 
-        bboxdims[1] = boundingBox.minPt.y; 
-        bboxdims[2] = boundingBox.minPt.z;
-        bboxdims[3] = boundingBox.maxPt.x;
-        bboxdims[4] = boundingBox.maxPt.y; 
-        bboxdims[5] = boundingBox.maxPt.z;   
-        return bboxdims; 
+        float[] bboxdimensions = new float[6];
+        bboxdimensions[0] = boundingBox.minPt.x; 
+        bboxdimensions[1] = boundingBox.minPt.y; 
+        bboxdimensions[2] = boundingBox.minPt.z;
+        bboxdimensions[3] = boundingBox.maxPt.x;
+        bboxdimensions[4] = boundingBox.maxPt.y; 
+        bboxdimensions[5] = boundingBox.maxPt.z;   
+        return bboxdimensions; 
     }
     
 }
@@ -122,7 +123,8 @@ class RayCollInfo
     float rootVal;
     int objIndex;
     
-    //Adding this temporarily
+    //Adding this here because of issue with BVH. This is needed to set material for BVH object. 
+    //Not used when acceleration is not used
     Material material;
     
     public RayCollInfo (PVector reflVec, PVector hitVec,PVector normal, boolean isHit, float rootVal)
@@ -142,6 +144,15 @@ class RayCollInfo
     {
         this.isHit = isHit;
     }
+    
+    void cloneData(RayCollInfo rayCollInfo) {
+        reflVec = rayCollInfo.reflVec;
+        hitVec = rayCollInfo.hitVec;
+        normal = rayCollInfo.normal;
+        isHit = rayCollInfo.isHit;
+        rootVal = rayCollInfo.rootVal;
+        material = rayCollInfo.material;
+    }
 }
 
 class Sphere extends RenderObj
@@ -150,14 +161,14 @@ class Sphere extends RenderObj
     float radius;
     Sphere(float radius, PVector center, Material m)
     {
-        super(m, sphereType);
+        super(m, sphere);
         this.radius = radius;
         this.center = center;
     }
     
     Sphere()
     {
-        super(sphereType);
+        super();
         center = new PVector(0,0,0);
         radius = 1;
     }
@@ -221,10 +232,10 @@ class Sphere extends RenderObj
         center.y = sphere.center.y;
         center.z = sphere.center.z;
         radius = sphere.radius;
-        
         material = sphere.material;
     }
     
+    //Not yet implemented
     boolean calcBoundingBox(){
        return false; 
     }
@@ -240,7 +251,7 @@ class MovingSphere extends RenderObj {
   
   /** Constructor */
   MovingSphere(float radius, PVector center1, PVector center2, Material m) {
-    super(m, sphereType);
+    super(m, sphere);
     this.radius = radius;
     this.startPos = center1; 
     this.endPos = center2;
@@ -293,9 +304,6 @@ class MovingSphere extends RenderObj {
           return rayCollInfo;
       }
   }
-
-
-  
 }
 
 class Triangle extends RenderObj
@@ -305,7 +313,7 @@ class Triangle extends RenderObj
     PVector vertex3;
     Triangle(PVector v1, PVector v2, PVector v3, Material m)
     {
-        super(m, triangleType);
+        super(m, triangle);
         boundingBox = new Box();
         vertex1 = v1;
         vertex2 = v2;
@@ -313,7 +321,7 @@ class Triangle extends RenderObj
     }
     
     Triangle(){
-        super( triangleType );  
+        super(triangle);  
         boundingBox = new Box(); 
         vertex1 = new PVector(0,0,0);
         vertex2 = new PVector(0,0,0);
@@ -327,15 +335,12 @@ class Triangle extends RenderObj
        //Two edges of triangle to calculate the normal
        PVector edge1 = createVec(vertex1,vertex3);
        PVector edge2 = createVec(vertex1,vertex2);
-       //PVector edge1 = new PVector(vertex3.x - vertex1.x, vertex3.y - vertex1.y, vertex3.z - vertex1.z);
-       //PVector edge2 = new PVector(vertex2.x - vertex1.x, vertex2.y - vertex1.y, vertex2.z - vertex1.z);
         
        //Cross product of the two edges gives the surface normal of the triangle
        PVector normal = edge1.cross(edge2);
 
        normal.normalize();
-        
-        
+       
        // Invert the normals when they are flipped
        if(normal.dot(r.direction)>0){
           normal.mult(-1);
@@ -409,15 +414,12 @@ class Triangle extends RenderObj
         material = triangle.material;
     }
     
-    //Calculate the bounding box
+    //Calculate the bounding box of the triangle
     boolean calcBoundingBox() { 
-      boundingBox.minPt.x = 1000; 
-      boundingBox.minPt.y = 1000; 
-      boundingBox.minPt.z = 1000;
-      boundingBox.maxPt.x = -1000;
-      boundingBox.maxPt.y = -1000;
-      boundingBox.maxPt.z = -1000;
+      boundingBox.minPt = new PVector(1000,1000,1000);
+      boundingBox.maxPt = new PVector(-1000,-1000,-1000);
       
+      //calculate minPt.x
       if (vertex1.x < boundingBox.minPt.x) {
           boundingBox.minPt.x = vertex1.x;
       }
@@ -437,8 +439,8 @@ class Triangle extends RenderObj
           boundingBox.maxPt.x = vertex3.x;
       }
       
-      
-      
+    
+      //calculate minPt.y
       if (vertex1.y < boundingBox.minPt.y) {
           boundingBox.minPt.y = vertex1.y;
       }
@@ -459,7 +461,7 @@ class Triangle extends RenderObj
       }
       
       
-      
+      //calculate minPt.z
       if (vertex1.z < boundingBox.minPt.z) {
           boundingBox.minPt.z = vertex1.z;
       }
@@ -478,11 +480,11 @@ class Triangle extends RenderObj
       if (vertex3.z > boundingBox.maxPt.z) {
           boundingBox.maxPt.z = vertex3.z;
       }
-        
       return true; 
     }
 }
 
+//Matrix stack used to store the transformation matrices
 public class MatrixStack {
   private int size = 0;
   private PMatrix3D tranMats[];
@@ -510,47 +512,4 @@ public class MatrixStack {
         size--;
         return matrix;
     }
-};
-
-public class PrimitiveStack {
-  int size = 0;
-  RenderObj renderObjects[];
-  static final int max = 70000;
-
-  PrimitiveStack() {
-      renderObjects = new RenderObj[max];
-      for(int i=0; i<max; ++i) {
-        renderObjects[i] = new RenderObj();
-      }
-  }
-  
-  void push(RenderObj renderObj) {
-      if(size == renderObjects.length) {
-        print("Object Stack capacity exceeded");
-        return;
-      }   
-      if( renderObj.getPrimitiveType() == triangleType ) {
-         renderObjects[size] = new Triangle();
-        ((Triangle) renderObjects[size]).cloneData( (Triangle) renderObj );  
-      } 
-      else{
-         println("Not adding anything");
-      }
-      size++;
-  }
-  
-  public RenderObj pop() {
-      RenderObj renderObj = new RenderObj(); 
-      if( renderObjects[size - 1].getPrimitiveType() == triangleType ) {
-        renderObj = new Triangle();
-        ((Triangle) renderObj).cloneData((Triangle)renderObjects[size - 1]);
-      } 
-    size--;
-      
-    return renderObj;
-  }
-  
-  public int getSize() {
-      return size; 
-  }
 };

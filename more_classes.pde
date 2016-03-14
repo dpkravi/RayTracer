@@ -5,40 +5,22 @@ class Box extends RenderObj {
   PVector maxPt;
 
   Box() {
-    super(boxType);
+    super(bbox);
     minPt = new PVector(0, 0, 0);
     maxPt = new PVector(0, 0, 0);
   }
 
-  /**< setBounds */
-  void setBounds(PVector min, PVector max ) {
-    minPt.x = min.x; 
-    minPt.y = min.y; 
-    minPt.z = min.z; 
-    maxPt.x = max.x; 
-    maxPt.y = max.y; 
-    maxPt.z = max.z;
-  }
-
   void set( float xmin, float ymin, float zmin, float xmax, float ymax, float zmax, Material mat ) {
-    minPt.x = xmin; 
-    minPt.y = ymin; 
-    minPt.z = zmin; 
-    maxPt.x = xmax; 
-    maxPt.y = ymax; 
-    maxPt.z = zmax; 
+    
+    minPt = new PVector(xmin,ymin,zmin);
+    maxPt = new PVector(xmax,ymax,zmax);
     material = mat;
   }
 
   void copyData( Box box ) {
 
-    minPt.x = box.minPt.x; 
-    minPt.y = box.minPt.y; 
-    minPt.z = box.minPt.z; 
-    maxPt.x = box.maxPt.x; 
-    maxPt.y = box.maxPt.y; 
-    maxPt.z = box.maxPt.z; 
-
+    minPt = new PVector(box.minPt.x,box.minPt.y,box.minPt.z);
+    maxPt = new PVector(box.maxPt.x,box.maxPt.y,box.maxPt.z);
     material = box.material;
   }
 
@@ -166,6 +148,7 @@ class Box extends RenderObj {
     if (n.dot(r.direction)>0) {
       n.mult(-1);
     }
+    
     // Store collision info
     PVector hitPosition = new PVector(r.origin.x + near * r.direction.x, r.origin.y + near * r.direction.y, r.origin.z + near * r.direction.z);
     PVector reflectionVector = new PVector(-r.direction.x, -r.direction.y, -r.direction.z);
@@ -182,16 +165,16 @@ class Instance extends RenderObj {
   PMatrix3D invMat;
 
   Instance() {
-    super( instanceType );
+    super( instance );
     index = -1; 
     tMat = new PMatrix3D();
     invMat = new PMatrix3D();
   }
 
-  Instance( int _ind, PMatrix3D _Two ) {
-    super( instanceType );
-    index = _ind; 
-    tMat = _Two.get();
+  Instance( int index, PMatrix3D transMatrix ) {
+    super( instance );
+    this.index = index; 
+    tMat = transMatrix.get();
     invMat = tMat.get(); 
     invMat.invert();
     material = namedRenderObjs.get(index).material;
@@ -213,7 +196,6 @@ class Instance extends RenderObj {
     PVector V2 = new PVector(tgt2[0], tgt2[1], tgt2[2]);
 
     //ray newR = Minv*a + t.Minv*b
-
     Ray ray = new Ray(P2, V2); 
 
     RayCollInfo rCInfo= namedRenderObjs.get(index).intersection(ray);
@@ -226,6 +208,7 @@ class Instance extends RenderObj {
 
       PVector n4 = new PVector( rCInfo.normal.x, rCInfo.normal.y, rCInfo.normal.z );
       PVector tgt4 = new PVector();
+      
       //newNormal = Transpose(Minv)*normal
       inv1.mult(n4, tgt4);
       rCInfo.normal.x = tgt4.x; 
@@ -261,24 +244,23 @@ class List extends RenderObj {
   void cloneData( List list ) {
     listSize = 0;
     for ( int i = 0; i < listSize; ++i ) {
-      if ( list.listObjects.get(i).getPrimitiveType() == triangleType ) { 
+      if ( list.listObjects.get(i).getPrimitiveType() == triangle ) { 
         addToList((Triangle) list.listObjects.get(i) );
       }      
-      //Add spheres and other types too
+      //Add spheres and other types too. Not necessary for current data files.
     }
-
     material = list.material;
   }
 
   void addToList(RenderObj renderObj) {
 
-    if ( renderObj.getPrimitiveType() == sphereType ) {
+    if ( renderObj.getPrimitiveType() == sphere ) {
       listObjects.add((Sphere)renderObj);
-    } else if (renderObj.getPrimitiveType() == triangleType ) {
+    } else if (renderObj.getPrimitiveType() == triangle ) {
       listObjects.add((Triangle)renderObj);
-    } else if (renderObj.getPrimitiveType() == instanceType ) {
+    } else if (renderObj.getPrimitiveType() == instance ) {
       listObjects.add((Instance)renderObj);
-    } else if (renderObj.getPrimitiveType() == boxType ) {
+    } else if (renderObj.getPrimitiveType() == bbox ) {
       listObjects.add((Box)renderObj);
     } else if (renderObj.getPrimitiveType() == listType ) {
       listObjects.add((List)renderObj);
@@ -292,69 +274,63 @@ class List extends RenderObj {
 
   boolean calcBoundingBox() {
 
-    boundingBox.minPt.x = 1000; 
-    boundingBox.minPt.y = 1000; 
-    boundingBox.minPt.z = 1000;
-    boundingBox.maxPt.x = -1000; 
-    boundingBox.maxPt.y = -1000; 
-    boundingBox.maxPt.z = -1000; 
+    boundingBox.minPt = new PVector(1000,1000,1000);
+    boundingBox.maxPt = new PVector(-1000,-1000,-1000); 
 
-    float[] b = new float[6];
+    float[] bboxdims = new float[6];
 
     // Loop through all bounding boxes of the list objects and calculate the bounding box for this list as a whole
     for ( int i = 0; i < listSize; i++ ) {
       
       listObjects.get(i).calcBoundingBox();
-      b = listObjects.get(i).getBoundingBoxDimensions();
+      bboxdims = listObjects.get(i).getBoundingBoxDimensions();
       
-      if (boundingBox.minPt.x > b[0]) {
-        boundingBox.minPt.x = b[0];
+      if (boundingBox.minPt.x > bboxdims[0]) {
+        boundingBox.minPt.x = bboxdims[0];
       }
-      if (boundingBox.minPt.y > b[1]) {
-        boundingBox.minPt.y = b[1];
+      if (boundingBox.minPt.y > bboxdims[1]) {
+        boundingBox.minPt.y = bboxdims[1];
       }
-      if (boundingBox.minPt.z > b[2]) {
-        boundingBox.minPt.z = b[2];
+      if (boundingBox.minPt.z > bboxdims[2]) {
+        boundingBox.minPt.z = bboxdims[2];
       }
-      if (boundingBox.maxPt.x < b[3]) {
-        boundingBox.maxPt.x = b[3];
+      if (boundingBox.maxPt.x < bboxdims[3]) {
+        boundingBox.maxPt.x = bboxdims[3];
       }
-      if (boundingBox.maxPt.y < b[4]) {
-        boundingBox.maxPt.y = b[4];
+      if (boundingBox.maxPt.y < bboxdims[4]) {
+        boundingBox.maxPt.y = bboxdims[4];
       }
-      if (boundingBox.maxPt.z < b[5]) {
-        boundingBox.maxPt.z = b[5];
+      if (boundingBox.maxPt.z < bboxdims[5]) {
+        boundingBox.maxPt.z = bboxdims[5];
       }
     } 
+
     return true;
   }
 
-
-  /**< hit function */
   RayCollInfo intersection(Ray R) {
     RayCollInfo rayCollInfo = new RayCollInfo(false);
     RayCollInfo boundingBoxHit = boundingBox.intersection(R);
-
-    if ( boundingBoxHit.isHit ) {
-
-      double minDist = 1000;
-      int minInd = -1;
-      boolean got = false;
-
-      for ( int i = 0; i < listSize; i++ ) {
+    //First find if the bounding box is hit. If it is not hit then the whole list can be skipped and execution is faster
+    if(boundingBoxHit.isHit){
+      double smallestDist = 1000;
+      int closestIndex = -1;
+      boolean hit = false;
+      //For each element in the list, intersect with the ray and find the closest hit. 
+      for(int i = 0; i < listSize; i++ ) {
         RayCollInfo objectHit = ( (Triangle) listObjects.get(i)).intersection(R);
         if ( objectHit.isHit ) {
-          got = true;
-          if ( objectHit.rootVal < minDist ) {
-            minDist = objectHit.rootVal;
-            minInd = i;
+          hit = true;
+          if ( objectHit.rootVal < smallestDist ) {
+            smallestDist = objectHit.rootVal;
+            closestIndex = i;
             rayCollInfo = objectHit;
           }
         }
       }
 
-      if ( got ) {
-        material = listObjects.get(minInd).material;
+      if (hit) {
+        material = listObjects.get(closestIndex).material;
       }
       return rayCollInfo;
     } else {
@@ -371,7 +347,7 @@ class BVH extends RenderObj {
   public RenderObj leftObj;
   public RenderObj rightObj;
 
-  BVH( RenderObj[] objects, int a ) {
+  BVH(RenderObj[] objects, int a) {
     super(bvhType);
     boundingBox = new Box();
     axis = a;
@@ -383,113 +359,91 @@ class BVH extends RenderObj {
     if ( objects.length == 1 ) {
       leftObj = (Triangle) objects[0];
       material = leftObj.material; 
-      //mAmb = left.mAmb;
-      //mDiff = left.mDiff;
     } else if ( objects.length == 2 ) {
       leftObj = (Triangle) objects[0];
-      rightObj = (Triangle) objects [1];
-    } else {       
-      Triangle[][] partitions = partitionAtAxis(objects); 
-      if ( partitions[0].length > 0 ) {
-        leftObj = new BVH( partitions[0], (axis + 1) % 3 );
-      }  
+      rightObj = (Triangle) objects[1];
 
-      if ( partitions[1].length > 0 ) { 
-        rightObj = new BVH( partitions[1], (axis + 1) %3 );
+    } else {  
+      //Recursively construct the BVH tree
+      ArrayList<ArrayList<Triangle>> partitions = partitionAtAxis(objects); 
+      if ( partitions.get(0).size() > 0 ) {
+        leftObj = new BVH( partitions.get(0).toArray(new RenderObj[partitions.get(0).size()]), (axis+1)%3);
+      }  
+      if ( partitions.get(1).size() > 0 ) { 
+        rightObj = new BVH( partitions.get(1).toArray(new RenderObj[partitions.get(1).size()]), (axis+1)%3);
       }
     }
-  }
-
-  void copyData( BVH bvh ) { 
-    print("BVH Should not come here");
   }
 
   boolean calcBoundingBox(RenderObj[] objects) {
 
-    boundingBox.minPt.x = 1000; 
-    boundingBox.minPt.y = 1000; 
-    boundingBox.minPt.z = 1000;
-    boundingBox.maxPt.x = -1000; 
-    boundingBox.maxPt.y = -1000; 
-    boundingBox.maxPt.z = -1000; 
+    boundingBox.minPt = new PVector(1000,1000,1000);
+    boundingBox.maxPt = new PVector(-1000,-1000,-1000);
 
-    float[] b = new float[6];
+    float[] bboxdims = new float[6];
 
     for ( int i = 0; i < objects.length; i++ ) {
-      b = objects[i].getBoundingBoxDimensions();
-      if (boundingBox.minPt.x > b[0]) {
-        boundingBox.minPt.x = b[0];
+      bboxdims = objects[i].getBoundingBoxDimensions();
+      if (boundingBox.minPt.x > bboxdims[0]) {
+        boundingBox.minPt.x = bboxdims[0];
       }
-      if (boundingBox.minPt.y > b[1]) {
-        boundingBox.minPt.y = b[1];
+      if (boundingBox.minPt.y > bboxdims[1]) {
+        boundingBox.minPt.y = bboxdims[1];
       }
-      if (boundingBox.minPt.z > b[2]) {
-        boundingBox.minPt.z = b[2];
+      if (boundingBox.minPt.z > bboxdims[2]) {
+        boundingBox.minPt.z = bboxdims[2];
       }
-      if (boundingBox.maxPt.x > b[3]) {
-        boundingBox.maxPt.x = b[3];
+      if (boundingBox.maxPt.x < bboxdims[3]) {
+        boundingBox.maxPt.x = bboxdims[3];
       }
-      if (boundingBox.maxPt.y > b[4]) {
-        boundingBox.maxPt.y = b[4];
+      if (boundingBox.maxPt.y < bboxdims[4]) {
+        boundingBox.maxPt.y = bboxdims[4];
       }
-      if (boundingBox.maxPt.z > b[5]) {
-        boundingBox.maxPt.z = b[5];
+      if (boundingBox.maxPt.z < bboxdims[5]) {
+        boundingBox.maxPt.z = bboxdims[5];
       }
     }  
-
     return true;
   }
 
-  Triangle[][] partitionAtAxis( RenderObj[] objects ) {
-    Triangle[][] parts = new Triangle[2][];
-    // Find m: Middle point in axis
-    float m = 0;
+  //Did only mid point splitting. No surface area heuristics 
+  ArrayList<ArrayList<Triangle>> partitionAtAxis( RenderObj[] objects ) {
+    ArrayList<ArrayList<Triangle>> partitions = new ArrayList<ArrayList<Triangle>>();
+    // Find midPt: Middle point in axis. Split the bounding box into two
+    float midPt = 0;
     int n = objects.length;
-    if (axis == 0)
-      m = ( boundingBox.minPt.x + boundingBox.maxPt.x ) / 2.0; 
-    if (axis == 1)
-      m = ( boundingBox.minPt.y + boundingBox.maxPt.y ) / 2.0; 
-    if (axis == 2)
-      m = ( boundingBox.minPt.z + boundingBox.maxPt.z ) / 2.0; 
 
-    Triangle[] tleft = new Triangle[n];
-    Triangle[] tright = new Triangle[n];    
-    int lCounter = 0;
-    int rCounter = 0;
-
+    if (axis == 0)  // X-Axis
+      midPt = (boundingBox.minPt.x + boundingBox.maxPt.x)/2.0; 
+    else if (axis == 1)  // Y-Axis
+      midPt = (boundingBox.minPt.y + boundingBox.maxPt.y)/2.0;  
+    else if (axis == 2)   // Z-Axis 
+      midPt = (boundingBox.minPt.z + boundingBox.maxPt.z)/2.0;  
+      
+    ArrayList<Triangle> leftTriangles = new ArrayList<Triangle>();
+    ArrayList<Triangle> rightTriangles = new ArrayList<Triangle>();    
+    
+    //Find the centroid of each primitive and compare with the midPt calculated above
     //Currently works only for triangle 
-    float p = 0;
+    float c = 0;
     for ( int i = 0; i < n; ++i ) {
       if (axis == 0)
-        p = ( objects[i].boundingBox.maxPt.x + objects[i].boundingBox.minPt.x ) / 2.0;
-      if (axis == 1)
-        p = ( objects[i].boundingBox.maxPt.y + objects[i].boundingBox.minPt.y ) / 2.0;
-      if (axis == 2)
-        p = ( objects[i].boundingBox.maxPt.z + objects[i].boundingBox.minPt.z ) / 2.0;
-      if ( p < m ) { 
-        tleft[lCounter] = (Triangle) objects[i];
-        lCounter++;
-      } else {
-        tright[rCounter] = (Triangle) objects[i]; 
-        rCounter++;
+        c = (objects[i].boundingBox.maxPt.x + objects[i].boundingBox.minPt.x)/2.0;
+      else if (axis == 1)
+        c = (objects[i].boundingBox.maxPt.y + objects[i].boundingBox.minPt.y)/2.0;
+      else if (axis == 2)
+        c = (objects[i].boundingBox.maxPt.z + objects[i].boundingBox.minPt.z)/2.0;
+
+      //if c<midPt then object is to the left of the split
+      if ( c < midPt ) { 
+          leftTriangles.add((Triangle)objects[i]);
+      } else {  // the object is to the right of the split
+          rightTriangles.add((Triangle)objects[i]); 
       }
     }
-
-    // Now put the elements into pleft and pright
-    Triangle[] pleft = new Triangle[lCounter];
-    Triangle[] pright = new Triangle[rCounter];    
-    for ( int i = 0; i < lCounter; ++i ) {
-      pleft[i] = (Triangle) tleft[i];
-    }
-
-    for ( int i = 0; i < rCounter; ++i ) {
-      pright[i] = (Triangle) tright[i];
-    }
-
-    parts[0] = pleft;
-    parts[1] = pright; 
-
-    return parts;
+    partitions.add(leftTriangles);
+    partitions.add(rightTriangles);
+    return partitions;
   }
 
 
@@ -497,35 +451,45 @@ class BVH extends RenderObj {
 
     RayCollInfo rayCollInfo = boundingBox.intersection(R);
     if (rayCollInfo.isHit) {
+      
+      RayCollInfo leftIntersection = new RayCollInfo(false);
+      RayCollInfo rightIntersection = new RayCollInfo(false);
 
-      RayCollInfo leftHit = new RayCollInfo(false);
-      RayCollInfo rightHit = new RayCollInfo(false);
+      boolean isLeftHit, isRightHit;
 
-      //hitRecord lrec = new hitRecord();
-      //hitRecord rrec = new hitRecord();
-      boolean left_hit, right_hit;
-
-      left_hit = leftObj.intersection(R).isHit;
-      right_hit = rightObj.intersection(R).isHit;
-
-      if ( left_hit && right_hit ) {
-        if ( leftHit.rootVal < rightHit.rootVal ) {
-          rayCollInfo = leftHit;
+      if(leftObj.primitiveType!=0) {
+        leftIntersection = leftObj.intersection(R);
+        isLeftHit = leftIntersection.isHit;
+      }
+      else 
+        isLeftHit = false; 
+        
+      if(rightObj.primitiveType!=0){
+        rightIntersection = rightObj.intersection(R);
+        isRightHit = rightIntersection.isHit;
+      }
+      else
+        isRightHit = false;
+      //If both intersect then find the closest intersection
+      if ( isLeftHit && isRightHit ) {
+        if ( leftIntersection.rootVal < rightIntersection.rootVal ) {
+          rayCollInfo.cloneData(leftIntersection);
         } else {
-          rayCollInfo = rightHit;
+          rayCollInfo.cloneData(rightIntersection);
         }  
-
+        //set material for the BVH node. This will be used when rendering
         material = rayCollInfo.material;
         return rayCollInfo;
-      } else if ( left_hit ) {
-        rayCollInfo = leftHit;
+      } else if (isLeftHit) {
+         rayCollInfo.cloneData(leftIntersection);
         material = rayCollInfo.material;
         return rayCollInfo;
-      } else if ( right_hit ) {
-        rayCollInfo = rightHit;
+      } else if ( isRightHit ) {
+        rayCollInfo.cloneData(rightIntersection);
         material = rayCollInfo.material;
         return rayCollInfo;
       } else {
+        //No intersection
         return new RayCollInfo(false);
       }
     } 
@@ -535,7 +499,4 @@ class BVH extends RenderObj {
     }
   }
 
-
-  void printInfo() {
-  }
 };  

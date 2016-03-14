@@ -4,21 +4,6 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-
-int defaultType = 0;
-int triangleType = 1;
-int sphereType = 2;
-int instanceType = 3;
-int boxType = 4;
-int listType = 5;
-int bvhType = 6;
-
-int timer;
-
-boolean readListFlag = false;
-
-
- 
 int u=0,v=0;   
 float lensRadius, focalDistance;
 boolean setLens = false;
@@ -36,6 +21,7 @@ float[] gmat = new float[16];
 
 //////////////////////My CODE////////////////////////////////
 ArrayList<RenderObj> renderList = new ArrayList<RenderObj>();
+
 ArrayList<PVector> vertices = new ArrayList<PVector>();
 ArrayList<Light> lights = new ArrayList<Light>();
 PVector[][] colorArray = new PVector[300][300];
@@ -52,15 +38,30 @@ float camRight;
 boolean shadows;
 int raysPerPixel;
 
+//Primitive object types
+final int base = 0;
+final int triangle = 1;
+final int sphere = 2;
+final int bbox = 3;
+final int instance = 4;
+final int listType = 5;
+final int bvhType = 6;
+
+int timer;
+
+boolean readListFlag = false;
+
+
 float smallestDist = 1000; 
 int closestIndex = -1; 
 PVector closestNormal = new PVector(0,0,0);
 PVector closestHit;
 
 MatrixStack matrixStack;
-PrimitiveStack primStack = new PrimitiveStack();
 PMatrix3D matrix;
-List list = new List();    
+List list = new List();   
+//Temp list used for creating list object
+ArrayList<RenderObj> tempList = new ArrayList<RenderObj>();
 /////////////////////////////////////////////////////////////////////
 // Some initializations for the scene.
 void setup()
@@ -94,6 +95,7 @@ void keyPressed()
     matrix.reset();
     namedRenderObjs.clear();
     renderObjNames.clear();
+    tempList.clear();
     switch(key)
     {
         case '1':  interpreter("t01.cli");
@@ -128,7 +130,6 @@ void keyPressed()
 //  Note: Function "splitToken()" is only available in processing 1.25 or higher.
 void interpreter(String filename)
 {
-  
     RenderObj current = new RenderObj();
     String str[] = loadStrings(filename);
     if (str == null) 
@@ -147,7 +148,7 @@ void interpreter(String filename)
             camBottom = -(tan(fovInRadians/2));
             camLeft = -(tan(fovInRadians/2));
             camRight = (tan(fovInRadians/2));
- //           println("Camera: "+camTop+" "+camBottom+" "+camLeft+" "+camRight);
+//          println("Camera: "+camTop+" "+camBottom+" "+camLeft+" "+camRight);
         }
         else if (token[0].equals("background"))
         {
@@ -177,10 +178,11 @@ void interpreter(String filename)
             PVector ambientCoeff = new PVector(float(token[4]), float(token[5]), float(token[6]));
             currentSurface = new Material(diffuseCoeff, ambientCoeff);
         }
-        // Named object with only sphere currently. Must fix this
+        
+        // Adds the most recent object as a named object 
         else if( token[0].equals("named_object") ) {
           String name = token[1];
-          addNamedObject( current, name );
+          addNamedObject(current, name);
         }
 
         //Instance reading
@@ -199,29 +201,33 @@ void interpreter(String filename)
         else if( token[0].equals("end_list") ) {
           readListFlag = false;
           list = new List();
-          int n = primStack.getSize();
-          for( int j = 0; j < n; ++j ) {
-            list.addToList(primStack.pop());
+          int n = tempList.size();
+          for( int j = 0; j < n; j++) {
+             list.addToList(tempList.get(j));
           }
           ((List)list).calcBoundingBox();
           renderList.add(list);
-          
+          tempList.clear();
         }
         
-        //else if( token[0].equals("end_accel") ) {
-        // readListFlag = false;
-        // int stackSize = primStack.getSize();
-        // RenderObj[] objects = new RenderObj[stackSize];
-        // for( int j = 0; j < stackSize; j++) {
-        //   objects[j] = (Triangle)(primStack.pop());
-        //   ((Triangle)objects[j]).calcBoundingBox();
-        // }      
-        // BVH bvHierarchy = new BVH( objects, 0 );
+        else if( token[0].equals("end_accel") ) {
+          readListFlag = false;
+          int accelListSize = tempList.size();
+          //Used array instead of arraylist in BVH because I assumed it would be faster. No changes
+          RenderObj[] objects = new RenderObj[accelListSize];
+          for(int j = 0; j < accelListSize; j++) {
+              objects[j] = (Triangle)(tempList.get(j));
+              ((Triangle)objects[j]).calcBoundingBox();
+          }   
+          //The 0 is the x-axis. 1 is y-axis and 2 is z-axis
+          BVH bvHierarchy = new BVH(objects, 0);
+            
+          // Save the list
+          renderList.add((BVH) bvHierarchy);
+          tempList.clear();
+
           
-        // // Save the list
-        // renderList.add(bvHierarchy);
-          
-        //}
+        }
         
         else if (token[0].equals("sphere"))
         {
@@ -240,9 +246,9 @@ void interpreter(String filename)
             center.z = result[2];
             
             Material sphereSurface = new Material(currentSurface);
-            Sphere sphere = new Sphere(radius, center, sphereSurface);
-            sphere.primitiveType = sphereType;
-            current  = (Sphere) sphere;
+            Sphere sph = new Sphere(radius, center, sphereSurface);
+            sph.primitiveType = sphere;
+            current  = (Sphere) sph;
           
         }
         else if (token[0].equals("moving_sphere"))
@@ -306,11 +312,12 @@ void interpreter(String filename)
                   Material triangleShader = new Material(currentSurface);
                   Triangle triangle = new Triangle(vertices.get(0), vertices.get(1), vertices.get(2), triangleShader);
                   triangle.primitiveType=1;
+                  //If list is declared then add the triangles to the tempList object.
                   if(!readListFlag){
                       renderList.add((RenderObj)triangle);
                   }
                   else {
-                      primStack.push(triangle);
+                     tempList.add(triangle);
                   }
                   vertices.clear();
               }
@@ -384,15 +391,12 @@ void interpreter(String filename)
           println ("timer = " + seconds);
         }
 
-    
         else if (token[0].equals("write"))
         {
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
           
-//          println("RenderList SizE  : "+ renderList.size()); 
-          boolean test = true;
           Ray currentRay = new Ray();
            for(u = 0; u < height; u++){
              for(v = 0; v < width; v++){
@@ -426,7 +430,6 @@ void interpreter(String filename)
             loadPixels();
             if(!filename.equals("rect_test.cli"))
             {
- //               println(colorArray[150][150].x);
                 // Convert the color array for updating Pixels to screen
                 for(int u = 0;u < height; u++){
                     for (int v = 0; v < width; v++){
