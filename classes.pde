@@ -85,15 +85,23 @@ class Material
 {
     PVector diffuseCoeff;
     PVector ambientCoeff;
+    
+    public int noise;
+    public int materialType; 
+    
     public Material(PVector d, PVector a)
     {
         diffuseCoeff = d;
         ambientCoeff = a;
+        noise = 0;
+        materialType = noTex;
     }
     public Material(Material m)
     {
         diffuseCoeff = m.diffuseCoeff;
         ambientCoeff = m.ambientCoeff;
+        noise = m.noise;
+        materialType = m.materialType;
     }
 }
 

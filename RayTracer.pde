@@ -47,10 +47,20 @@ final int instance = 4;
 final int listType = 5;
 final int bvhType = 6;
 
+//Texture variables
+final int noTex = 0;
+final int woodTex = 1;
+final int marbleTex = 2;
+final int stoneTex = 3;
+
+int uTex, vTex;
+PVector uVertex, vVertex;
+
+int uvi;
+
 int timer;
 
 boolean readListFlag = false;
-
 
 float smallestDist = 1000; 
 int closestIndex = -1; 
@@ -226,7 +236,26 @@ void interpreter(String filename)
           renderList.add((BVH) bvHierarchy);
           tempList.clear();
 
-          
+        }
+        
+        // Noise 
+        else if( token[0].equals("noise") ) {
+          currentSurface.noise = Integer.parseInt(token[1]) ;
+        }
+    
+        // Marble
+        else if( token[0].equals("marble") ) {
+          currentSurface.materialType = marbleTex;
+        }
+    
+        // Wood
+        else if( token[0].equals("wood") ) {
+          currentSurface.materialType = woodTex;
+        }
+        
+        // Stone
+        else if( token[0].equals("stone") ) {
+          currentSurface.materialType = stoneTex;
         }
         
         else if (token[0].equals("sphere"))
