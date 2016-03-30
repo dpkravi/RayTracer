@@ -235,6 +235,28 @@ class Sphere extends RenderObj
         }
     }
     
+    PVector getDiffuseColor( PVector P ) {
+      float noise;
+      
+      // For noise
+      if( material.noise != 0 ) {
+          float f = material.noise;
+          // The provided noise function generates values in the range [-1,1]. Adding 1 to move it to the [0,1] range
+          
+          noise = (1.0 + noise_3d( P.x*f, P.y*f, P.z*f ))/2.0;        
+          
+          PVector diffuseColor = new PVector(0,0,0);
+          diffuseColor.x = material.diffuseCoeff.x*noise;
+          diffuseColor.y = material.diffuseCoeff.y*noise;
+          diffuseColor.z = material.diffuseCoeff.z*noise;
+          return diffuseColor;
+          
+      }
+      else {
+        return material.diffuseCoeff;        
+      }   
+    }
+    
     void cloneData( Sphere sphere ) {
         center.x = sphere.center.x;
         center.y = sphere.center.y;

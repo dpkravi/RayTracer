@@ -252,10 +252,16 @@ void interpreter(String filename)
         else if( token[0].equals("wood") ) {
           currentSurface.materialType = woodTex;
         }
-        
+
         // Stone
         else if( token[0].equals("stone") ) {
           currentSurface.materialType = stoneTex;
+        }
+        
+        //Ignore the texture_coordinates
+        else if( token[0].equals("texture_coord") ) {
+            //uTex = Integer.parseInt(token[1]);
+            //vTex = Integer.parseInt(token[2]);
         }
         
         else if (token[0].equals("sphere"))
@@ -278,6 +284,10 @@ void interpreter(String filename)
             Sphere sph = new Sphere(radius, center, sphereSurface);
             sph.primitiveType = sphere;
             current  = (Sphere) sph;
+            
+            if( filename != "data/t02.cli" ) {
+               renderList.add(current);
+            }
           
         }
         else if (token[0].equals("moving_sphere"))
@@ -425,6 +435,7 @@ void interpreter(String filename)
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
+          println("Renderlist size : "+renderList.size());
           
           Ray currentRay = new Ray();
            for(u = 0; u < height; u++){
