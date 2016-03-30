@@ -74,6 +74,36 @@ float noise_3d(float x, float y, float z) {
   return nxyz;
 }
 
+//n should be between 0 and 1
+PVector woodColor(float n){
+  
+  println("test");
+  
+    PVector lightWoodColor = new PVector(0,0,0);
+    lightWoodColor.x = 0.91;
+    lightWoodColor.y = 0.82;
+    lightWoodColor.z = 0.74;
+        
+    PVector darkWoodColor = new PVector(0,0,0);
+    darkWoodColor.x = 0.45;
+    darkWoodColor.y = 0.33;
+    darkWoodColor.z = 0.25;
+    
+    PVector colorDiff = new PVector(0,0,0);
+    
+    colorDiff = lightWoodColor.sub(darkWoodColor);
+    
+    float colorGrain = n % 0.09;
+    
+    if( colorGrain > 0.05 ) { 
+        return lightWoodColor; 
+    }
+    else { 
+        return darkWoodColor; 
+    }
+}
+
+
 boolean init_flag = false;
 
 int grad3[][] = {{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},

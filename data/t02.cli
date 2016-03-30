@@ -10,17 +10,13 @@ point_light 5 3 3   1 1 1
 diffuse   0.8 0.8 0.8   0 0 0
 wood
 
-sphere 1  0 0 0
-named_object wood_sphere
-
-diffuse   0.8 0.8 0.8   .2 .2 .2
-
 push
 translate 0 0 -4
 rotate 45  0 1 0
-instance wood_sphere
+sphere 1  0 0 0
 pop
 
+diffuse   0.8 0.8 0.8   .2 .2 .2
 
 push
 

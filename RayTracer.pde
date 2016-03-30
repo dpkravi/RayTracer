@@ -283,9 +283,10 @@ void interpreter(String filename)
             Material sphereSurface = new Material(currentSurface);
             Sphere sph = new Sphere(radius, center, sphereSurface);
             sph.primitiveType = sphere;
+            println(sph.material.materialType);
             current  = (Sphere) sph;
             
-            if( filename != "data/t02.cli" ) {
+            if( filename != "data/t07.cli" ) {
                renderList.add(current);
             }
           
@@ -435,8 +436,7 @@ void interpreter(String filename)
           ////////////////////////////////////////
           ///////Start the ray shooting here//////
           ////////////////////////////////////////
-          println("Renderlist size : "+renderList.size());
-          
+
           Ray currentRay = new Ray();
            for(u = 0; u < height; u++){
              for(v = 0; v < width; v++){

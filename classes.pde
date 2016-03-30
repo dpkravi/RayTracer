@@ -238,6 +238,8 @@ class Sphere extends RenderObj
     PVector getDiffuseColor(PVector pt) {
       float noise;
       
+      //print(material.materialType+" ");
+      
       // For noise
       if( material.noise != 0 ) {
           float f = material.noise;
@@ -251,6 +253,33 @@ class Sphere extends RenderObj
           diffuseColor.z = material.diffuseCoeff.z*noise;
           return diffuseColor;
       }
+      
+     // For wood texture
+     else if( material.materialType == woodTex ) {
+     
+       // Cylindric coordinates
+       float s = atan2(pt.y, pt.x);
+       if( s < 0 ) { 
+           s =  s + 2.0*PI; 
+       }
+       s = s/(2*PI);
+       float t = pt.z;
+       t = abs(t)/radius;
+              
+       float r = sqrt(pt.x*pt.x + pt.y*pt.y);
+       if( r > 1 && r < 1.0001 ) 
+       { 
+           r = 1; 
+       } // clamp
+       r = r / radius;
+
+       float f = 1.0;
+       float A = 0.45;
+       noise = noise_3d( f*pt.x, f*pt.y, f*pt.z );      
+       return woodColor(r + A*(noise));
+       
+     } 
+     
       else {
           return material.diffuseCoeff;        
       }   
