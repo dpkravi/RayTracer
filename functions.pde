@@ -49,7 +49,7 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
             diffuseColor = currentObj.material.diffuseCoeff;
           }
           float NL = max(rayCollInfo.normal.dot(shadowRay.direction), 0);
-          PVector diffuseShading = new PVector( diffuseColor.x*currentLight.colour.x*NL, currentObj.material.diffuseCoeff.y*currentLight.colour.y*NL, currentObj.material.diffuseCoeff.z*currentLight.colour.z*NL);
+          PVector diffuseShading = new PVector( diffuseColor.x*currentLight.colour.x*NL, diffuseColor.y*currentLight.colour.y*NL, diffuseColor.z*currentLight.colour.z*NL);
           finalColor.x = finalColor.x + diffuseShading.x;
           finalColor.y = finalColor.y + diffuseShading.y;
           finalColor.z = finalColor.z + diffuseShading.z;
