@@ -77,10 +77,6 @@ float noise_3d(float x, float y, float z) {
 //n should be between 0 and 1
 PVector woodColor(float n){
   
- //float [] c1 = new float[3]; c1[0] = 0.54; c1[1] = 0.27; c1[2] = 0.07;
- //// Dark Wood 
- //float [] c2 = new float[3]; c2[0] = 0.82; c2[1] = 0.41; c2[2] = 0.12  ;
-  
     PVector lightWoodColor = new PVector(0,0,0);
     lightWoodColor.x = 0.91;
     lightWoodColor.y = 0.82;
@@ -99,6 +95,47 @@ PVector woodColor(float n){
     else { 
         return darkWoodColor; 
     }
+}
+
+PVector marbleColor(float n){
+//http://physbam.stanford.edu/cs448x/old/Procedural_Noise%282f%29Perlin_Noise.html
+
+  PVector finalColor = new PVector();
+  
+  PVector color1 = new PVector(0.1,0.1,0);
+  PVector color2 = new PVector(0.9,0.6,0.6);
+  
+  PVector colorDiff = new PVector(0,0,0);
+  colorDiff.x = color2.x - color1.x;
+  colorDiff.y = color2.y - color1.y;
+  colorDiff.z = color2.z - color1.z;
+
+  float f = sqrt( n + 1.0 )*0.7071;
+  finalColor.y = color1.y + colorDiff.y*f;
+  f = sqrt(f);
+  finalColor.x = color1.x + colorDiff.x*f;
+  finalColor.z = color1.z + colorDiff.z*f;  
+ 
+  return finalColor;
+}
+
+float turbulence( float x, float y, float z) {
+    // http://http.developer.nvidia.com/GPUGems/gpugems_ch05.html
+    float noise = 0;
+    x = x + 123.456;
+    
+    float minF = 1.0;
+    //max pixel size
+    float maxF = 300;
+    float f;
+    
+    for(f = minF; f < maxF; f = f*2.0) {
+      noise = noise + (1.0/f)*abs(noise_3d(x,y,z));
+      x = x*2.0;
+      x = x*2.0;
+      x = x*2.0;    
+    }
+    return noise - 0.3;
 }
 
 

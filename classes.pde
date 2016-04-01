@@ -280,10 +280,18 @@ class Sphere extends RenderObj
        
      } 
      
-      else {
-          return material.diffuseCoeff;        
-      }   
-    }
+     else if( material.materialType == marbleTex ) {
+     
+       //From perlin's initial algo   x = sin((pos(2)+3.0*turbulence(pos,0.0125))*pi);
+         float value = pt.x + 3.0*turbulence( pt.x, pt.y, pt.z );      
+         noise = sin(PI*value);
+         return marbleColor(noise);     
+     }
+     
+     else {
+         return material.diffuseCoeff;        
+     }   
+  }
     
     void cloneData( Sphere sphere ) {
         center.x = sphere.center.x;
