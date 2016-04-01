@@ -286,7 +286,7 @@ void interpreter(String filename)
             println(sph.material.materialType);
             current  = (Sphere) sph;
             
-            if( filename != "data/t07.cli" ) {
+            if( filename != "data/t02.cli" ) {
                renderList.add(current);
             }
           

@@ -218,6 +218,19 @@ class Instance extends RenderObj {
 
     return rCInfo;
   }
+  
+    /** get Diffuse color */
+  PVector getDiffuseColor(PVector pt) {
+
+      // Converting the point coordinates to canonical coordinates
+      // https://en.wikipedia.org/wiki/Canonical_transformation
+      
+      PVector canonicalPt = new PVector();
+      invMat.mult(pt, canonicalPt); 
+      
+      //Current data files only include sphere instances so only taking that into consideration
+      return ((Sphere) namedRenderObjs.get(index)).getDiffuseColor(canonicalPt);
+  }
 
   void cloneData( Instance instance ) {
     index = instance.index;

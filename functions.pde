@@ -44,6 +44,10 @@ PVector getColor(ArrayList<Light> lights, ArrayList<RenderObj> renderList, Rende
             Sphere s = (Sphere) currentObj;
             diffuseColor = s.getDiffuseColor(rayCollInfo.hitVec);
           }
+          else if(currentObj.primitiveType == instance){
+            Instance I = (Instance) currentObj;
+            diffuseColor = I.getDiffuseColor(rayCollInfo.hitVec);
+          }
           else
           {
             diffuseColor = currentObj.material.diffuseCoeff;

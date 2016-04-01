@@ -238,7 +238,7 @@ class Sphere extends RenderObj
     PVector getDiffuseColor(PVector pt) {
       float noise;
       
-      //print(material.materialType+" ");
+      print(material.materialType+" ");
       
       // For noise
       if( material.noise != 0 ) {
