@@ -12,8 +12,8 @@ float lightValue = 0;
 boolean isPush = false;
 // boolean isPop = false;
     
-int screen_width = 300;
-int screen_height = 300;
+int screen_width = 600;
+int screen_height = 600;
 // global matrix values
 PMatrix3D global_mat;
 float[] gmat = new float[16];
@@ -24,7 +24,7 @@ ArrayList<RenderObj> renderList = new ArrayList<RenderObj>();
 
 ArrayList<PVector> vertices = new ArrayList<PVector>();
 ArrayList<Light> lights = new ArrayList<Light>();
-PVector[][] colorArray = new PVector[300][300];
+PVector[][] colorArray = new PVector[screen_width][screen_height];
 
 Material currentSurface;
 PVector backgroundColor = new PVector(0,0,0);
@@ -76,7 +76,7 @@ ArrayList<RenderObj> tempList = new ArrayList<RenderObj>();
 // Some initializations for the scene.
 void setup()
 {
-    size (300, 300, P3D);
+    size (600, 600, P3D);
     // use P3D environment so that matrix commands work properly
     noStroke();
     colorMode (RGB, 1.0);
@@ -283,7 +283,6 @@ void interpreter(String filename)
             Material sphereSurface = new Material(currentSurface);
             Sphere sph = new Sphere(radius, center, sphereSurface);
             sph.primitiveType = sphere;
-            println(sph.material.materialType);
             current  = (Sphere) sph;
             
             if( filename != "data/t02.cli" ) {
@@ -440,7 +439,7 @@ void interpreter(String filename)
           Ray currentRay = new Ray();
            for(u = 0; u < height; u++){
              for(v = 0; v < width; v++){
-               int correctU = 299 - u;
+               int correctU = screen_width -1 - u;
                colorArray[correctU][v] = new PVector(0,0,0);
                if(raysPerPixel == 1){
                  //get ray to the center of the pixel
@@ -474,9 +473,9 @@ void interpreter(String filename)
                 for(int u = 0;u < height; u++){
                     for (int v = 0; v < width; v++){
                         if(colorArray[u][v].x>=0)
-                          pixels[u*300+v] = color(colorArray[u][v].x,colorArray[u][v].y,colorArray[u][v].z);
+                          pixels[u*screen_width+v] = color(colorArray[u][v].x,colorArray[u][v].y,colorArray[u][v].z);
                         else
-                          pixels[u*300+v] = color(backgroundColor.x,backgroundColor.y,backgroundColor.z);
+                          pixels[u*screen_height+v] = color(backgroundColor.x,backgroundColor.y,backgroundColor.z);
                     }
                 }
             }

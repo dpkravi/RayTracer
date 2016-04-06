@@ -238,8 +238,6 @@ class Sphere extends RenderObj
     PVector getDiffuseColor(PVector pt) {
       float noise;
       
-      print(material.materialType+" ");
-      
       // For noise
       if( material.noise != 0 ) {
           float f = material.noise;
@@ -256,36 +254,16 @@ class Sphere extends RenderObj
       
      // For wood texture
      else if( material.materialType == woodTex ) {
-     
-       // Cylindric coordinates
-       float s = atan2(pt.y, pt.x);
-       if( s < 0 ) { 
-           s =  s + 2.0*PI; 
-       }
-       s = s/(2*PI);
-       float t = pt.z;
-       t = abs(t)/radius;
-              
-       float r = sqrt(pt.x*pt.x + pt.y*pt.y);
-       if( r > 1 && r < 1.0001 ) 
-       { 
-           r = 1; 
-       } // clamp
-       r = r / radius;
-
-       float f = 1.0;
-       float A = 0.45;
-       noise = noise_3d( f*pt.x, f*pt.y, f*pt.z );      
-       return woodColor(r + A*(noise));
-       
+         return woodColor(pt.x, pt.y, pt.z);
      } 
      
      else if( material.materialType == marbleTex ) {
-     
-       //From perlin's initial algo   x = sin((pos(2)+3.0*turbulence(pos,0.0125))*pi);
-         float value = pt.x + 3.0*turbulence( pt.x, pt.y, pt.z );      
+     // http://people.wku.edu/qi.li/teaching/446/cg13_texturing.pdf
+         float value = pt.x + 5.0*turbulence( pt.x, pt.y, pt.z );      
          noise = sin(PI*value);
-         return marbleColor(noise);     
+         return marbleColor(noise);    
+          
+
      }
      
      else {

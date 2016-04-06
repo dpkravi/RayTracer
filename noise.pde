@@ -74,42 +74,93 @@ float noise_3d(float x, float y, float z) {
   return nxyz;
 }
 
-//n should be between 0 and 1
-PVector woodColor(float n){
-  
-    PVector lightWoodColor = new PVector(0,0,0);
-    lightWoodColor.x = 0.91;
-    lightWoodColor.y = 0.82;
-    lightWoodColor.z = 0.74;
+PVector woodColor(float x, float y, float z) {
+
+    PVector pt = new PVector(x,y,z);
+    float ring = sqrt( pt.y*pt.y + pt.z*pt.z );
+    float radius = sqrt(pt.x*pt.x + pt.y*pt.y + pt.z*pt.z );
+    ring += (noise_3d( pt.x, pt.y, pt.z ) * radius/5);
+
+    // To give a noisy texture to the dark ring. Adds variation to the rings
+    float noiseScale = 8.0;
+    float radiusVariation = noise_3d(pt.x, pt.y*noiseScale, pt.z*noiseScale)/50.0;  //Testing with these numbers to give appealing final pattern
+    ring += radiusVariation;
+
+    // Adding higher frequency noise to previous noise to produce more randomness
+    noiseScale = 50.0;   
+    float moreRadiusVariation = noise_3d(pt.x, pt.y*noiseScale, pt.z*noiseScale)/100.0; 
+    ring += moreRadiusVariation;
+
+    //This noise gives an overall fine grainy texture to the wood
+    noiseScale = 100.0;   //Very fine grain
+    float grainNoise = noise_3d(pt.x * noiseScale, pt.y * noiseScale, pt.z * noiseScale)/8.0; //Dividing by 8 to reduce intensity of the noise.
+
+
+    float ringGap = 0.04*radius; //Gap between two rings
+    float num = ring/ringGap;
+    int numRings = floor(num);
+    float blendVar = 2.0 * abs((numRings + 0.5)-num); //This gives the gradient distances to blend the colors
+
+    //light and dark brown rings
+    PVector lightRing = new PVector( 0.85, 0.68, 0.52 );
+    PVector darkRing = new PVector( 0.58, 0.43, 0.32 ); 
+
     
-    PVector darkWoodColor = new PVector(0,0,0);
-    darkWoodColor.x = 0.76;
-    darkWoodColor.y = 0.60;
-    darkWoodColor.z = 0.35;
-    
-    float colorGrain = n % 0.09;
-    
-    if( colorGrain > 0.05 ) { 
-        return lightWoodColor; 
-    }
-    else { 
-        return darkWoodColor; 
+    if (numRings % 2 == 0)   //Every alternate ring should be a light ring with uniform color
+        return new PVector( lightRing.x + grainNoise, lightRing.y + grainNoise, lightRing.z + grainNoise );
+    else   // The other alternate rings should be a dark ring which blends with the light ring based on the blendVar 
+    {
+      //blending the colors to make smoother transitions between the colors. 
+      PVector blendedColor = blendColors(darkRing, lightRing, blendVar);
+      //adding the fine grain texture
+      blendedColor.add( grainNoise, grainNoise, grainNoise );
+      return blendedColor;
     }
 }
 
+//blend the two colors based on the value of t. This produces gradient edges
+PVector blendColors(PVector firstColor, PVector secondColor, float t){
+    PVector blended = new PVector();
+    blended.x = (1-t)*firstColor.x + t*secondColor.x;
+    blended.y = (1-t)*firstColor.y + t*secondColor.y;
+    blended.z = (1-t)*firstColor.z + t*secondColor.z;
+    PVector clamped = clamp(blended);
+    return clamped;
+}
+
+PVector clamp(PVector Color)
+{
+  Color.x = clamp(Color.x);
+  Color.y = clamp(Color.y);
+  Color.z = clamp(Color.z);
+  return Color;
+}
+
+//Clamp values between 0 and 1
+float clamp(float val)
+{
+  if ( val < 0 )
+      val = 0;
+  else if ( val > 1 )
+      val = 1;
+  return val;
+}
+
 PVector marbleColor(float n){
-//http://physbam.stanford.edu/cs448x/old/Procedural_Noise%282f%29Perlin_Noise.html
+// From Computer Graphics: Theory Into Practice By Jeffrey J. McConnell
 
   PVector finalColor = new PVector();
   
-  PVector color1 = new PVector(0.1,0.1,0);
-  PVector color2 = new PVector(0.9,0.6,0.6);
+  //These two colors will be merged for the marble
+  PVector color1 = new PVector(0.2,0.2,0.0);
+  PVector color2 = new PVector(0.9,0.8,0.4);
   
+  // Color Difference 
   PVector colorDiff = new PVector(0,0,0);
   colorDiff.x = color2.x - color1.x;
   colorDiff.y = color2.y - color1.y;
   colorDiff.z = color2.z - color1.z;
-
+  
   float f = sqrt( n + 1.0 )*0.7071;
   finalColor.y = color1.y + colorDiff.y*f;
   f = sqrt(f);
@@ -119,25 +170,41 @@ PVector marbleColor(float n){
   return finalColor;
 }
 
+
+
 float turbulence( float x, float y, float z) {
-    // http://http.developer.nvidia.com/GPUGems/gpugems_ch05.html
+// http://http.developer.nvidia.com/GPUGems/gpugems_ch05.html
     float noise = 0;
-    x = x + 123.456;
-    
-    float minF = 1.0;
+    x+=128;
+        
     //max pixel size
     float maxF = 300;
     float f;
-    
-    for(f = minF; f < maxF; f = f*2.0) {
+        
+    for(f = 1; f < maxF; f = f*2.0) {
       noise = noise + (1.0/f)*abs(noise_3d(x,y,z));
-      x = x*2.0;
-      x = x*2.0;
-      x = x*2.0;    
+      x = x*2.0; y = y*2.0; z = z*2.0;    
     }
-    return noise - 0.3;
+    return noise;
 }
 
+ //float turbulence( float x, float y, float z)
+ ////http://lodev.org/cgtutor/randomnoise.html
+ //{
+ //   float size = 100;
+ //   PVector pt = new PVector(x,y,z);
+ //   float turb = 0;
+ //   while ( size >= 1 )
+ //   {
+ //     float noise = (1 + noise_3d( pt.x * size, pt.y * size, pt.z * size ) / size)/1.1;
+ //     turb+=noise;
+ //     size/=2;
+ //   }
+ //   return turb;
+ //}
+ 
+
+  
 
 boolean init_flag = false;
 
