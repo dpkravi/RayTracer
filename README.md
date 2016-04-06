@@ -15,3 +15,6 @@ Features:
 - Bounding box. Can be used to render a box too
 - Acceleration using lists (Objects in list render faster when they are smaller)
 - Acceleration using Bounding Volume Hierarchy. (Surface area heuristic not implemented)
+- Perlin Noise texture
+- Wood texture using perlin noise
+- Marble texture using turbulence and perlin noise
