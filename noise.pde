@@ -177,34 +177,16 @@ float turbulence( float x, float y, float z) {
     float noise = 0;
     x+=128;
         
-    //max pixel size
-    float maxF = 300;
+    //maximum pixel size
+    float fmax = 300;
     float f;
         
-    for(f = 1; f < maxF; f = f*2.0) {
+    for(f = 1; f < fmax; f = f*2.0) {
       noise = noise + (1.0/f)*abs(noise_3d(x,y,z));
       x = x*2.0; y = y*2.0; z = z*2.0;    
     }
     return noise;
 }
-
- //float turbulence( float x, float y, float z)
- ////http://lodev.org/cgtutor/randomnoise.html
- //{
- //   float size = 100;
- //   PVector pt = new PVector(x,y,z);
- //   float turb = 0;
- //   while ( size >= 1 )
- //   {
- //     float noise = (1 + noise_3d( pt.x * size, pt.y * size, pt.z * size ) / size)/1.1;
- //     turb+=noise;
- //     size/=2;
- //   }
- //   return turb;
- //}
- 
-
-  
 
 boolean init_flag = false;
 

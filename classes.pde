@@ -257,14 +257,20 @@ class Sphere extends RenderObj
          return woodColor(pt.x, pt.y, pt.z);
      } 
      
+     // For marble texture
      else if( material.materialType == marbleTex ) {
      // http://people.wku.edu/qi.li/teaching/446/cg13_texturing.pdf
          float value = pt.x + 5.0*turbulence( pt.x, pt.y, pt.z );      
          noise = sin(PI*value);
          return marbleColor(noise);    
-          
-
      }
+     
+     // For stone texture
+     else if( material.materialType == stoneTex ) {
+         WorleyNoise worleyNoise = new WorleyNoise();
+         float[] dist = worleyNoise.getNoise(pt.x, pt.y, pt.z);
+         return stoneColor(dist, pt.x, pt.y, pt.z);
+     }     
      
      else {
          return material.diffuseCoeff;        

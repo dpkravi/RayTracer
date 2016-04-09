@@ -53,11 +53,6 @@ final int woodTex = 1;
 final int marbleTex = 2;
 final int stoneTex = 3;
 
-int uTex, vTex;
-PVector uVertex, vVertex;
-
-int uvi;
-
 int timer;
 
 boolean readListFlag = false;
@@ -260,8 +255,7 @@ void interpreter(String filename)
         
         //Ignore the texture_coordinates
         else if( token[0].equals("texture_coord") ) {
-            //uTex = Integer.parseInt(token[1]);
-            //vTex = Integer.parseInt(token[2]);
+
         }
         
         else if (token[0].equals("sphere"))
