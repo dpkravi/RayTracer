@@ -18,3 +18,6 @@ Features:
 - Perlin Noise texture
 - Wood texture using perlin noise
 - Marble texture using turbulence and perlin noise
+- Reflective materials
+- Hollow cylinder primitive
+- Caustic Photon Mapping
