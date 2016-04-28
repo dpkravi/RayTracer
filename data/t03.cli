@@ -1,44 +1,62 @@
-# one textured sphere
-
-rays_per_pixel 1
+# square mirror, no caustic photons
 
 fov 60
-background .4 .4 .7
-point_light -3 5 5  .5 .5 .5
-point_light 5 3 3   1 1 1
 
-diffuse   0.8 0.8 0.8   0 0 0
-marble
+# blue background
 
-sphere 1  0 0 -4
+background 0.2 0.2 1
 
-diffuse   0.8 0.8 0.8   .2 .2 .2
+# light source
 
-push
+point_light  1 1 -0.7  .8 .8 .8
 
-translate 0 -1 -4
-scale 6 6 6
-rotate 90  1 0 0
-translate -0.5 -0.5 0
+# these two triangles acts as a ground plane
+
+diffuse  .8 .8 .8  .2 .2 .2
 
 begin
-texture_coord 0 0
-vertex  0 0 0
-texture_coord 0 1
-vertex  0 1 0
-texture_coord 1 0
-vertex   1 0 0
+vertex -100 -1 -100
+vertex  100 -1 -100
+vertex  100 -1  100
 end
 
 begin
-texture_coord 1 0
-vertex  1 0 0
-texture_coord 1 1
-vertex  1 1 0
-texture_coord 0 1
-vertex  0 1 0
+vertex  100 -1  100
+vertex -100 -1  100
+vertex -100 -1 -100
+end
+
+# a sphere on the ground
+
+diffuse  0 .6 0   0 .2 0
+sphere 0.25  0.5 -0.75 -2.5
+
+# these two triangles form a mirrored square
+
+reflective  .5 .5 .5   .2 .2 .2  0.9
+
+push
+
+translate 0 0 -2.5
+rotate 45  1 0 0
+
+begin
+vertex -1 -1 0
+vertex  1 -1 0
+vertex  1  1 0
+end
+
+begin
+vertex  1  1 0
+vertex -1  1 0
+vertex -1 -1 0
 end
 
 pop
 
+# ring
+
+reset_timer
 write t03.png
+print_timer
+

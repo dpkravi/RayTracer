@@ -1,4 +1,4 @@
-# square mirror, low number of caustic photons
+# square mirror, high number of caustic photons
 
 fov 60
 
@@ -10,8 +10,8 @@ background 0.2 0.2 1
 
 point_light  1 1 -0.7  .8 .8 .8
 
-# low number of caustic photons
-caustic_photons  80000  1 0.05
+# high number of caustic photons
+caustic_photons  2000000  80 0.05
 
 # these two triangles acts as a ground plane
 
@@ -57,9 +57,7 @@ end
 
 pop
 
-# ring
-
 reset_timer
-write t04.png
+write t05.png
 print_timer
 
